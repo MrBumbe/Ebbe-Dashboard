@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import client from '../../api/client';
+import EmojiPicker from '../../components/EmojiPicker';
 
 interface EventItem {
   id: string;
@@ -63,12 +64,7 @@ export default function Events() {
       {adding && (
         <form onSubmit={(e) => void handleAdd(e)} className="bg-white border border-gray-200 rounded-xl p-4 mb-6 flex flex-col gap-3">
           <div className="flex gap-3">
-            <input
-              placeholder="🎉"
-              value={form.emoji}
-              onChange={(e) => setForm({ ...form, emoji: e.target.value })}
-              className="w-16 border rounded-lg px-2 py-2 text-center text-lg"
-            />
+            <EmojiPicker value={form.emoji} onChange={(e) => setForm({ ...form, emoji: e })} />
             <input
               required
               placeholder="Event name"
