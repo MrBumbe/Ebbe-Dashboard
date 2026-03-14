@@ -12,6 +12,17 @@ interface GeoResult {
   longitude: number;
 }
 
+const ACCENT_COLOURS = [
+  { label: 'Blue',   value: '#1565C0' },
+  { label: 'Pink',   value: '#C2185B' },
+  { label: 'Green',  value: '#2E7D32' },
+  { label: 'Purple', value: '#6A1B9A' },
+  { label: 'Orange', value: '#E65100' },
+  { label: 'Red',    value: '#C62828' },
+  { label: 'Teal',   value: '#00695C' },
+  { label: 'Yellow', value: '#F57F17' },
+];
+
 export default function Settings() {
   const { t } = useTranslation();
 
@@ -36,12 +47,14 @@ export default function Settings() {
     if (!query.trim()) return;
     setSearching(true);
     setLocationError('');
+    setResults([]);
     try {
       const res = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=${lang}&format=json`
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=8&language=${lang}&format=json`
       );
       const json = await res.json() as { results?: GeoResult[] };
       setResults(json.results ?? []);
+      if (!json.results?.length) setLocationError('No locations found. Try a different city name.');
     } catch {
       setLocationError(t('errors.networkError'));
     } finally {
@@ -50,14 +63,33 @@ export default function Settings() {
   }
 
   async function handleSelectLocation(loc: GeoResult) {
-    await client.put('/api/v1/modules/weather-openmeteo/config' as string, {
-      lat: loc.latitude,
-      lon: loc.longitude,
-      locationName: `${loc.name}, ${loc.country}`,
-    });
-    setSavedLocation(`${loc.name}, ${loc.country}`);
-    setResults([]);
-    setQuery('');
+    setLocationError('');
+    try {
+      await client.put('/modules/weather-openmeteo/config', {
+        lat: loc.latitude,
+        lon: loc.longitude,
+        locationName: loc.admin1 ? `${loc.name}, ${loc.admin1}, ${loc.country}` : `${loc.name}, ${loc.country}`,
+      });
+      setSavedLocation(loc.admin1 ? `${loc.name}, ${loc.admin1}, ${loc.country}` : `${loc.name}, ${loc.country}`);
+      setResults([]);
+      setQuery('');
+    } catch {
+      setLocationError('Failed to save location. Please try again.');
+    }
+  }
+
+  // Child accent colour
+  const [accentColor, setAccentColor] = useState('#1565C0');
+  const [colorSaved, setColorSaved] = useState(false);
+
+  async function handleColorSave(color: string) {
+    setAccentColor(color);
+    setColorSaved(false);
+    try {
+      await client.put('/settings/child.accentColor', { value: JSON.stringify(color) });
+      setColorSaved(true);
+      setTimeout(() => setColorSaved(false), 2000);
+    } catch { /* ignore */ }
   }
 
   return (
@@ -83,8 +115,9 @@ export default function Settings() {
       {/* Weather location */}
       <section className="bg-white rounded-xl border border-gray-100 p-5 mb-4">
         <h2 className="text-sm font-semibold text-gray-700 mb-1">Weather location</h2>
+        <p className="text-xs text-gray-400 mb-3">Search for a city to set the weather location on the child screen.</p>
         {savedLocation && (
-          <p className="text-xs text-green-600 mb-3">✓ Set to: {savedLocation}</p>
+          <p className="text-xs text-green-600 mb-3">✓ Saved: {savedLocation}</p>
         )}
         <div className="flex gap-2 mb-2">
           <input
@@ -92,7 +125,7 @@ export default function Settings() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && void handleSearch()}
-            placeholder="Search city..."
+            placeholder="e.g. Mullsjö"
             className="flex-1 border rounded-lg px-3 py-2 text-sm"
           />
           <button
@@ -105,21 +138,49 @@ export default function Settings() {
         </div>
         {locationError && <p className="text-xs text-red-500 mb-2">{locationError}</p>}
         {results.length > 0 && (
-          <ul className="border rounded-lg overflow-hidden divide-y divide-gray-50">
+          <ul className="border rounded-lg overflow-hidden divide-y divide-gray-100">
             {results.map((r) => (
               <li key={r.id}>
                 <button
-                  onClick={() => void handleSelectLocation(r)}
-                  className="w-full text-left px-3 py-2.5 text-sm hover:bg-blue-50 transition-colors"
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault(); // prevent blur before click fires
+                    void handleSelectLocation(r);
+                  }}
+                  className="w-full text-left px-3 py-3 text-sm hover:bg-blue-50 active:bg-blue-100 transition-colors cursor-pointer"
                 >
                   <span className="font-medium text-gray-800">{r.name}</span>
-                  <span className="text-gray-500 ml-2">{r.admin1 ? `${r.admin1}, ` : ''}{r.country}</span>
-                  <span className="text-xs text-gray-400 ml-2">{r.latitude.toFixed(2)}°, {r.longitude.toFixed(2)}°</span>
+                  {r.admin1 && <span className="text-gray-500 ml-1.5">{r.admin1}</span>}
+                  <span className="text-gray-400 ml-1.5">{r.country}</span>
+                  <span className="block text-xs text-gray-400 mt-0.5">{r.latitude.toFixed(2)}°N, {r.longitude.toFixed(2)}°E</span>
                 </button>
               </li>
             ))}
           </ul>
         )}
+      </section>
+
+      {/* Child accent colour */}
+      <section className="bg-white rounded-xl border border-gray-100 p-5 mb-4">
+        <h2 className="text-sm font-semibold text-gray-700 mb-1">Child screen colour theme</h2>
+        <p className="text-xs text-gray-400 mb-3">Choose an accent colour for the child's dashboard.</p>
+        <div className="flex flex-wrap gap-3">
+          {ACCENT_COLOURS.map((c) => (
+            <button
+              key={c.value}
+              title={c.label}
+              onClick={() => void handleColorSave(c.value)}
+              className="w-10 h-10 rounded-full border-4 transition-all hover:scale-110"
+              style={{
+                backgroundColor: c.value,
+                borderColor: accentColor === c.value ? '#111' : 'transparent',
+                outline: accentColor === c.value ? `2px solid ${c.value}` : 'none',
+                outlineOffset: '2px',
+              }}
+            />
+          ))}
+        </div>
+        {colorSaved && <p className="text-xs text-green-600 mt-2">✓ Colour saved</p>}
       </section>
     </div>
   );

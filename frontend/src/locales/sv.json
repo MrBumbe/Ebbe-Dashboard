@@ -11,14 +11,17 @@
       "progress": "{{done}} av {{total}} klara"
     },
     "mood": {
-      "prompt": "Hur mår du idag?",
+      "prompt": "Hur mår du?",
       "happy":   "Glad",
       "okay":    "Okej",
       "sad":     "Ledsen",
       "angry":   "Arg",
       "tired":   "Trött",
       "excited": "Exalterad",
-      "anxious": "Orolig"
+      "anxious": "Orolig",
+      "logged":  "Humör loggat!",
+      "cooldownSoon": "Du kan checka in igen snart.",
+      "cooldownMinutes": "Nästa inloggning om {{minutes}} min."
     },
     "stars": {
       "label": "Stjärnor",

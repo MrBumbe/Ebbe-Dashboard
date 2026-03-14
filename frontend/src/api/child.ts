@@ -66,6 +66,10 @@ export const childApi = {
   getSchedule: (token: string) => get<ScheduleItem[]>('/schedule', token),
   getEvents: (token: string) => get<EventItem[]>('/events', token),
   getBalance: (token: string) => get<{ balance: number }>('/balance', token),
+  getMoodStatus: (token: string) =>
+    get<{ canLog: boolean; cooldownEndsAt: number | null }>('/mood/status', token),
   logMood: (token: string, mood: string) => post<{ id: string; mood: string }>('/mood', token, { mood }),
   getWeather: (token: string) => get<WeatherData | null>('/weather', token),
+  getTheme: (token: string) =>
+    get<{ accentColor: string }>('/theme', token),
 };

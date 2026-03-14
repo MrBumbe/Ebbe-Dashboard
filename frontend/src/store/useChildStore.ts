@@ -14,8 +14,10 @@ interface ChildState {
   schedule: ScheduleItem[];
   events: EventItem[];
   weather: WeatherData | null;
-  moodLoggedToday: boolean;
+  moodCooldownEndsAt: number | null;
   timer: ActiveTimer | null;
+  timerMinimized: boolean;
+  accentColor: string;
 
   setToken: (token: string) => void;
   setTasks: (tasks: TaskItem[]) => void;
@@ -24,10 +26,12 @@ interface ChildState {
   setSchedule: (items: ScheduleItem[]) => void;
   setEvents: (items: EventItem[]) => void;
   setWeather: (data: WeatherData | null) => void;
-  setMoodLoggedToday: (val: boolean) => void;
+  setMoodCooldown: (endsAt: number | null) => void;
+  setAccentColor: (color: string) => void;
   startTimer: (seconds: number, label: string) => void;
   cancelTimer: () => void;
   tickTimer: () => void;
+  toggleTimerMinimized: () => void;
 }
 
 export const useChildStore = create<ChildState>((set) => ({
@@ -37,8 +41,10 @@ export const useChildStore = create<ChildState>((set) => ({
   schedule: [],
   events: [],
   weather: null,
-  moodLoggedToday: false,
+  moodCooldownEndsAt: null,
   timer: null,
+  timerMinimized: false,
+  accentColor: '#1565C0',
 
   setToken: (token) => set({ token }),
 
@@ -58,17 +64,24 @@ export const useChildStore = create<ChildState>((set) => ({
 
   setWeather: (weather) => set({ weather }),
 
-  setMoodLoggedToday: (moodLoggedToday) => set({ moodLoggedToday }),
+  setMoodCooldown: (moodCooldownEndsAt) => set({ moodCooldownEndsAt }),
+
+  setAccentColor: (accentColor) => set({ accentColor }),
 
   startTimer: (seconds, label) =>
-    set({ timer: { label, totalSeconds: seconds, remaining: seconds } }),
+    set({ timer: { label, totalSeconds: seconds, remaining: seconds }, timerMinimized: false }),
 
-  cancelTimer: () => set({ timer: null }),
+  cancelTimer: () => set({ timer: null, timerMinimized: false }),
 
   tickTimer: () =>
     set((s) => {
       if (!s.timer) return s;
       const remaining = s.timer.remaining - 1;
-      return { timer: remaining <= 0 ? null : { ...s.timer, remaining } };
+      if (remaining <= 0) return { timer: null, timerMinimized: false };
+      // Force fullscreen when ≤ 60 seconds left
+      const timerMinimized = s.timerMinimized && remaining > 60;
+      return { timer: { ...s.timer, remaining }, timerMinimized };
     }),
+
+  toggleTimerMinimized: () => set((s) => ({ timerMinimized: !s.timerMinimized })),
 }));

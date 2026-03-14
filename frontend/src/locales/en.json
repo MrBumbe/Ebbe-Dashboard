@@ -11,14 +11,17 @@
       "progress": "{{done}} of {{total}} done"
     },
     "mood": {
-      "prompt": "How are you feeling today?",
+      "prompt": "How are you feeling?",
       "happy":   "Happy",
       "okay":    "Okay",
       "sad":     "Sad",
       "angry":   "Angry",
       "tired":   "Tired",
       "excited": "Excited",
-      "anxious": "Anxious"
+      "anxious": "Anxious",
+      "logged":  "Mood logged!",
+      "cooldownSoon": "You can check in again soon.",
+      "cooldownMinutes": "Next check-in in {{minutes}} min."
     },
     "stars": {
       "label": "Stars",

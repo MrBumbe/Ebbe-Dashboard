@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import { eq, and, gte, asc } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { getDb } from '../db';
-import { tasks, taskCompletions, scheduleItems, events, moodLog, rewardTransactions, modules } from '../db/schema';
+import { tasks, taskCompletions, scheduleItems, events, moodLog, rewardTransactions, modules, settings } from '../db/schema';
 import { requireChildToken, ChildRequest } from '../middleware/childAuth';
 import { broadcastToFamily } from '../websocket';
 
@@ -13,6 +13,10 @@ function startOfToday(): number {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
   return d.getTime();
+}
+
+function oneHourAgo(): number {
+  return Date.now() - 60 * 60 * 1000;
 }
 
 // GET /api/v1/child/tasks — active tasks + today's completion status
@@ -128,7 +132,24 @@ router.get('/balance', (req: ChildRequest, res: Response) => {
   res.json({ data: { balance } });
 });
 
-// POST /api/v1/child/mood — log today's mood
+// GET /api/v1/child/mood/status — cooldown status (can the child log mood now?)
+router.get('/mood/status', (req: ChildRequest, res: Response) => {
+  const familyId = req.familyId!;
+  const db = getDb();
+
+  const recent = db.select().from(moodLog)
+    .where(and(eq(moodLog.familyId, familyId), gte(moodLog.loggedAt, oneHourAgo())))
+    .get();
+
+  if (recent) {
+    const cooldownEndsAt = recent.loggedAt + 60 * 60 * 1000;
+    res.json({ data: { canLog: false, cooldownEndsAt } });
+  } else {
+    res.json({ data: { canLog: true, cooldownEndsAt: null } });
+  }
+});
+
+// POST /api/v1/child/mood — log a mood (max once per hour)
 router.post('/mood', (req: ChildRequest, res: Response) => {
   const { mood } = req.body as { mood?: string };
   const familyId = req.familyId!;
@@ -141,13 +162,14 @@ router.post('/mood', (req: ChildRequest, res: Response) => {
 
   const db = getDb();
 
-  // Only allow one entry per day
+  // Only allow one entry per hour
   const existing = db.select().from(moodLog)
-    .where(and(eq(moodLog.familyId, familyId), gte(moodLog.loggedAt, startOfToday())))
+    .where(and(eq(moodLog.familyId, familyId), gte(moodLog.loggedAt, oneHourAgo())))
     .get();
 
   if (existing) {
-    res.status(409).json({ error: { code: 'ALREADY_LOGGED', message: 'Mood already logged today' } });
+    const cooldownEndsAt = existing.loggedAt + 60 * 60 * 1000;
+    res.status(409).json({ error: { code: 'ALREADY_LOGGED', message: 'Mood already logged this hour', cooldownEndsAt } });
     return;
   }
 
@@ -161,6 +183,19 @@ router.post('/mood', (req: ChildRequest, res: Response) => {
   }).run();
 
   res.status(201).json({ data: { id, mood } });
+});
+
+// GET /api/v1/child/theme — child accent colour from family settings
+router.get('/theme', (req: ChildRequest, res: Response) => {
+  const familyId = req.familyId!;
+  const db = getDb();
+
+  const row = db.select().from(settings)
+    .where(and(eq(settings.familyId, familyId), eq(settings.key, 'child.accentColor')))
+    .get();
+
+  const accentColor = row ? (JSON.parse(row.value) as string) : '#1565C0';
+  res.json({ data: { accentColor } });
 });
 
 // GET /api/v1/child/weather — weather if module is enabled
