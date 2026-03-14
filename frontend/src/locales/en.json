@@ -1,0 +1,102 @@
+{
+  "appName": "Ebbe",
+  "loading": "Loading...",
+  "child": {
+    "goodMorning": "Good morning!",
+    "goodEvening": "Good evening!",
+    "tasks": {
+      "morning": "Morning routine",
+      "evening": "Evening routine",
+      "allDone": "Great job! All done! 🎉",
+      "progress": "{{done}} of {{total}} done"
+    },
+    "mood": {
+      "prompt": "How are you feeling today?",
+      "happy":   "Happy",
+      "okay":    "Okay",
+      "sad":     "Sad",
+      "angry":   "Angry",
+      "tired":   "Tired",
+      "excited": "Excited",
+      "anxious": "Anxious"
+    },
+    "stars": {
+      "label": "Stars",
+      "balance": "You have {{count}} stars!"
+    },
+    "timer": {
+      "label": "In {{minutes}} min: {{activity}}"
+    },
+    "schedule": {
+      "title": "This week",
+      "days": {
+        "0": "Monday",
+        "1": "Tuesday",
+        "2": "Wednesday",
+        "3": "Thursday",
+        "4": "Friday",
+        "5": "Saturday",
+        "6": "Sunday"
+      }
+    },
+    "event": {
+      "daysLeft_one":  "In {{count}} day: {{title}}",
+      "daysLeft_other": "In {{count}} days: {{title}}",
+      "today": "Today: {{title}}! 🎉"
+    }
+  },
+  "parent": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "tasks":     "Tasks",
+      "schedule":  "Schedule",
+      "events":    "Events",
+      "rewards":   "Rewards",
+      "mood":      "Mood log",
+      "timer":     "Timer",
+      "settings":  "Settings"
+    },
+    "login": {
+      "title":    "Log in",
+      "email":    "Email address",
+      "password": "Password",
+      "submit":   "Log in",
+      "error":    "Incorrect email or password"
+    },
+    "tasks": {
+      "title":     "Routine tasks",
+      "add":       "Add task",
+      "morning":   "Morning",
+      "evening":   "Evening",
+      "starValue": "Stars",
+      "save":      "Save",
+      "delete":    "Delete"
+    },
+    "rewards": {
+      "title":    "Rewards",
+      "balance":  "Balance: {{count}} ⭐",
+      "add":      "Add reward",
+      "redeem":   "Redeem",
+      "starCost": "Stars"
+    },
+    "timer": {
+      "title":   "Send a warning",
+      "minutes": "Minutes",
+      "label":   "Activity (e.g. Dinner)",
+      "send":    "Send to screen",
+      "cancel":  "Cancel timer"
+    },
+    "settings": {
+      "title":    "Settings",
+      "language": "Language",
+      "mood":     "Active mood types",
+      "ai":       "AI assistant",
+      "aiOn":     "Enabled",
+      "aiOff":    "Disabled"
+    }
+  },
+  "errors": {
+    "networkError": "Could not reach the server. Check your connection.",
+    "unknown":      "Something went wrong. Please try again."
+  }
+}

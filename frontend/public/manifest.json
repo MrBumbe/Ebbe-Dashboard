@@ -1,0 +1,13 @@
+{
+  "name": "Ebbe",
+  "short_name": "Ebbe",
+  "description": "Family routine dashboard for kids",
+  "start_url": "/child",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1565C0",
+  "theme_color": "#1565C0",
+  "icons": [
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

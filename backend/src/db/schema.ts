@@ -1,0 +1,145 @@
+import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
+
+// ── Families ────────────────────────────────────────────────
+export const families = sqliteTable('families', {
+  id:           text('id').primaryKey(),
+  name:         text('name').notNull(),
+  childToken:   text('child_token').notNull().unique(),
+  createdAt:    integer('created_at').notNull(),
+});
+
+// ── Users (parents / guardians) ─────────────────────────────
+export const users = sqliteTable('users', {
+  id:           text('id').primaryKey(),
+  familyId:     text('family_id').notNull().references(() => families.id),
+  name:         text('name').notNull(),
+  email:        text('email').notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  role:         text('role', { enum: ['admin', 'parent', 'readonly'] }).notNull().default('parent'),
+  createdAt:    integer('created_at').notNull(),
+});
+
+// ── Routine tasks ────────────────────────────────────────────
+export const tasks = sqliteTable('tasks', {
+  id:           text('id').primaryKey(),
+  familyId:     text('family_id').notNull().references(() => families.id),
+  title:        text('title').notNull(),
+  emoji:        text('emoji').notNull().default('⭐'),
+  routine:      text('routine', { enum: ['morning', 'evening', 'custom'] }).notNull(),
+  order:        integer('order').notNull().default(0),
+  starValue:    integer('star_value').notNull().default(1),
+  isActive:     integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  createdAt:    integer('created_at').notNull(),
+});
+
+// ── Task completions log ─────────────────────────────────────
+export const taskCompletions = sqliteTable('task_completions', {
+  id:           text('id').primaryKey(),
+  familyId:     text('family_id').notNull().references(() => families.id),
+  taskId:       text('task_id').notNull().references(() => tasks.id),
+  completedAt:  integer('completed_at').notNull(),
+  starsAwarded: integer('stars_awarded').notNull(),
+});
+
+// ── Weekly schedule ──────────────────────────────────────────
+export const scheduleItems = sqliteTable('schedule_items', {
+  id:           text('id').primaryKey(),
+  familyId:     text('family_id').notNull().references(() => families.id),
+  dayOfWeek:    integer('day_of_week').notNull(), // 0=Mon … 6=Sun
+  timeStart:    text('time_start').notNull(),     // "HH:MM"
+  title:        text('title').notNull(),
+  emoji:        text('emoji').notNull().default('📅'),
+  color:        text('color').notNull().default('#4A90D9'),
+});
+
+// ── One-off events with countdown ───────────────────────────
+export const events = sqliteTable('events', {
+  id:           text('id').primaryKey(),
+  familyId:     text('family_id').notNull().references(() => families.id),
+  title:        text('title').notNull(),
+  emoji:        text('emoji').notNull().default('🎉'),
+  eventDate:    integer('event_date').notNull(), // unix ms
+  isVisible:    integer('is_visible', { mode: 'boolean' }).notNull().default(true),
+});
+
+// ── Mood log ─────────────────────────────────────────────────
+export const moodLog = sqliteTable('mood_log', {
+  id:           text('id').primaryKey(),
+  familyId:     text('family_id').notNull().references(() => families.id),
+  mood:         text('mood', {
+                  enum: ['happy', 'okay', 'sad', 'angry', 'tired', 'excited', 'anxious']
+                }).notNull(),
+  loggedAt:     integer('logged_at').notNull(), // unix ms
+  note:         text('note'),                   // optional parent note
+});
+
+// ── Reward catalog ───────────────────────────────────────────
+export const rewards = sqliteTable('rewards', {
+  id:           text('id').primaryKey(),
+  familyId:     text('family_id').notNull().references(() => families.id),
+  title:        text('title').notNull(),
+  emoji:        text('emoji').notNull().default('🎁'),
+  starCost:     integer('star_cost').notNull(),
+  isActive:     integer('is_active', { mode: 'boolean' }).notNull().default(true),
+});
+
+// ── Star economy ledger ──────────────────────────────────────
+export const rewardTransactions = sqliteTable('reward_transactions', {
+  id:           text('id').primaryKey(),
+  familyId:     text('family_id').notNull().references(() => families.id),
+  type:         text('type', { enum: ['earn', 'redeem'] }).notNull(),
+  amount:       integer('amount').notNull(),
+  description:  text('description').notNull(),
+  relatedId:    text('related_id'),  // taskId or rewardId
+  createdAt:    integer('created_at').notNull(),
+});
+
+// ── Key/value settings per family ───────────────────────────
+export const settings = sqliteTable('settings', {
+  familyId:     text('family_id').notNull().references(() => families.id),
+  key:          text('key').notNull(),
+  value:        text('value').notNull(), // JSON string
+}, (t) => ({
+  pk: primaryKey({ columns: [t.familyId, t.key] }),
+}));
+
+// ── Installed modules ────────────────────────────────────────
+export const modules = sqliteTable('modules', {
+  familyId:     text('family_id').notNull().references(() => families.id),
+  moduleId:     text('module_id').notNull(),
+  isEnabled:    integer('is_enabled', { mode: 'boolean' }).notNull().default(true),
+  config:       text('config').notNull().default('{}'), // JSON string
+}, (t) => ({
+  pk: primaryKey({ columns: [t.familyId, t.moduleId] }),
+}));
+
+// ── AI memory (v3 — tables created now, populated later) ────
+export const aiCoreMemory = sqliteTable('ai_core_memory', {
+  familyId:     text('family_id').primaryKey().references(() => families.id),
+  content:      text('content').notNull().default(''),
+  updatedAt:    integer('updated_at').notNull(),
+});
+
+export const aiConversationLog = sqliteTable('ai_conversation_log', {
+  id:           text('id').primaryKey(),
+  familyId:     text('family_id').notNull().references(() => families.id),
+  role:         text('role', { enum: ['user', 'assistant'] }).notNull(),
+  content:      text('content').notNull(),
+  createdAt:    integer('created_at').notNull(),
+});
+
+export const aiDailySummaries = sqliteTable('ai_daily_summaries', {
+  id:           text('id').primaryKey(),
+  familyId:     text('family_id').notNull().references(() => families.id),
+  date:         text('date').notNull(),    // "YYYY-MM-DD"
+  summary:      text('summary').notNull(),
+  createdAt:    integer('created_at').notNull(),
+});
+
+export const aiMonthlySummaries = sqliteTable('ai_monthly_summaries', {
+  id:           text('id').primaryKey(),
+  familyId:     text('family_id').notNull().references(() => families.id),
+  month:        text('month').notNull(),   // "YYYY-MM"
+  summary:      text('summary').notNull(),
+  createdAt:    integer('created_at').notNull(),
+});

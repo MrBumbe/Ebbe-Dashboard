@@ -1,0 +1,102 @@
+{
+  "appName": "Ebbe",
+  "loading": "Laddar...",
+  "child": {
+    "goodMorning": "God morgon!",
+    "goodEvening": "God kväll!",
+    "tasks": {
+      "morning": "Morgonrutinen",
+      "evening": "Kvällsrutinen",
+      "allDone": "Bra jobbat! Allt klart! 🎉",
+      "progress": "{{done}} av {{total}} klara"
+    },
+    "mood": {
+      "prompt": "Hur mår du idag?",
+      "happy":   "Glad",
+      "okay":    "Okej",
+      "sad":     "Ledsen",
+      "angry":   "Arg",
+      "tired":   "Trött",
+      "excited": "Exalterad",
+      "anxious": "Orolig"
+    },
+    "stars": {
+      "label": "Stjärnor",
+      "balance": "Du har {{count}} stjärnor!"
+    },
+    "timer": {
+      "label": "Om {{minutes}} min: {{activity}}"
+    },
+    "schedule": {
+      "title": "Veckans schema",
+      "days": {
+        "0": "Måndag",
+        "1": "Tisdag",
+        "2": "Onsdag",
+        "3": "Torsdag",
+        "4": "Fredag",
+        "5": "Lördag",
+        "6": "Söndag"
+      }
+    },
+    "event": {
+      "daysLeft_one":  "Om {{count}} dag: {{title}}",
+      "daysLeft_other": "Om {{count}} dagar: {{title}}",
+      "today": "Idag: {{title}}! 🎉"
+    }
+  },
+  "parent": {
+    "nav": {
+      "dashboard": "Översikt",
+      "tasks":     "Uppgifter",
+      "schedule":  "Schema",
+      "events":    "Händelser",
+      "rewards":   "Belöningar",
+      "mood":      "Humörlogg",
+      "timer":     "Timer",
+      "settings":  "Inställningar"
+    },
+    "login": {
+      "title":    "Logga in",
+      "email":    "E-postadress",
+      "password": "Lösenord",
+      "submit":   "Logga in",
+      "error":    "Fel e-post eller lösenord"
+    },
+    "tasks": {
+      "title":      "Rutinuppgifter",
+      "add":        "Lägg till uppgift",
+      "morning":    "Morgon",
+      "evening":    "Kväll",
+      "starValue":  "Stjärnor",
+      "save":       "Spara",
+      "delete":     "Ta bort"
+    },
+    "rewards": {
+      "title":     "Belöningar",
+      "balance":   "Saldo: {{count}} ⭐",
+      "add":       "Lägg till belöning",
+      "redeem":    "Lös in",
+      "starCost":  "Stjärnor"
+    },
+    "timer": {
+      "title":   "Skicka förvarning",
+      "minutes": "Minuter",
+      "label":   "Aktivitet (t.ex. Middag)",
+      "send":    "Skicka till skärmen",
+      "cancel":  "Avbryt timer"
+    },
+    "settings": {
+      "title":    "Inställningar",
+      "language": "Språk",
+      "mood":     "Aktiva humörtyper",
+      "ai":       "AI-assistent",
+      "aiOn":     "Aktiverad",
+      "aiOff":    "Inaktiverad"
+    }
+  },
+  "errors": {
+    "networkError": "Kunde inte nå servern. Kontrollera anslutningen.",
+    "unknown":      "Något gick fel. Försök igen."
+  }
+}

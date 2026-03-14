@@ -1,0 +1,62 @@
+{
+	# Global options — email only needed for HTTPS/Let's Encrypt
+	email {$CADDY_EMAIL:admin@example.com}
+}
+
+# For local/home use:  CADDY_SCHEME=http  CADDY_HOST=localhost  (default)
+# For public domain:   CADDY_SCHEME=https  CADDY_HOST=ebbe.yourdomain.com
+{$CADDY_SCHEME:http}://{$CADDY_HOST:localhost} {
+
+	# ── API — proxy to Express backend ──────────────────────────
+	@api path /api/*
+	handle @api {
+		reverse_proxy backend:3000 {
+			header_up Host {host}
+			header_up X-Real-IP {remote_host}
+			header_up X-Forwarded-For {remote_host}
+		}
+	}
+
+	# ── WebSocket ────────────────────────────────────────────────
+	# Caddy 2 handles WS upgrades automatically via reverse_proxy;
+	# the explicit header_up directives ensure compatibility.
+	@ws {
+		path /ws
+		header Connection *Upgrade*
+		header Upgrade websocket
+	}
+	handle @ws {
+		reverse_proxy backend:3000 {
+			header_up Host {host}
+			header_up X-Real-IP {remote_host}
+		}
+	}
+
+	# ── Frontend — everything else ───────────────────────────────
+	handle {
+		reverse_proxy frontend:80
+	}
+
+	# ── Security headers ─────────────────────────────────────────
+	header {
+		# Prevent MIME type sniffing
+		X-Content-Type-Options nosniff
+		# Disallow embedding in iframes
+		X-Frame-Options DENY
+		# Minimal referrer leakage
+		Referrer-Policy strict-origin-when-cross-origin
+		# Restrict browser features
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		# Strict CSP — adjust if you add external fonts/scripts
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss: https://api.open-meteo.com https://geocoding-api.open-meteo.com"
+		# Hide server identity
+		-Server
+	}
+
+	encode gzip
+
+	log {
+		output stderr
+		level WARN
+	}
+}

@@ -1,0 +1,7 @@
+dbs:
+  - path: /data/ebbe.db
+    replicas:
+      - url: ${LITESTREAM_REPLICA_URL}
+        sync-interval: 1m
+        snapshot-interval: 24h
+        retention: 7d

@@ -1,0 +1,82 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ebbe-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3000
+      DATABASE_PATH: /data/ebbe.db
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    volumes:
+      - ebbe-data:/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${CORS_ORIGIN:-http://localhost}
+    container_name: ebbe-frontend
+    restart: unless-stopped
+    networks:
+      - internal
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: ebbe-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      CADDY_HOST: ${CADDY_HOST:-localhost}
+      CADDY_EMAIL: ${CADDY_EMAIL:-admin@example.com}
+      CADDY_SCHEME: ${CADDY_SCHEME:-http}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - internal
+    depends_on:
+      - backend
+      - frontend
+
+  litestream:
+    image: litestream/litestream:latest
+    container_name: ebbe-litestream
+    restart: unless-stopped
+    volumes:
+      - ebbe-data:/data
+      - ./litestream.yml:/etc/litestream.yml:ro
+    networks:
+      - internal
+    depends_on:
+      - backend
+    profiles:
+      - backup
+    environment:
+      LITESTREAM_REPLICA_URL: ${LITESTREAM_REPLICA_URL:-}
+
+volumes:
+  ebbe-data:
+  caddy-data:
+  caddy-config:
+
+networks:
+  internal:
+    driver: bridge
