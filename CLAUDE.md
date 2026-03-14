@@ -571,31 +571,70 @@ Before marking any child view component as done, verify:
 
 ## Current Status
 
-**Phase:** Pre-development — architecture finalized, ready to build v1
+**Phase:** v1 shipped — running in Docker, post-launch fixes in progress
 
-**v1 scope:**
-- [ ] Project skeleton + Docker Compose
-- [ ] Database schema + Drizzle migrations
-- [ ] Auth (JWT + child token)
-- [ ] Task CRUD + completion logging
-- [ ] Reward system (earn + redeem)
-- [ ] Mood check-in
-- [ ] Weekly schedule
-- [ ] Events with countdown
-- [ ] WebSocket (timer trigger)
-- [ ] Child view UI
-- [ ] Parent admin UI
-- [ ] Weather module (Open-Meteo)
-- [ ] i18n (sv + en)
-- [ ] PWA manifest
+**v1 scope — all complete ✅**
+- [x] Project skeleton + Docker Compose
+- [x] Database schema + Drizzle migrations
+- [x] Auth (JWT + child token)
+- [x] Task CRUD + completion logging
+- [x] Reward system (earn + redeem)
+- [x] Mood check-in
+- [x] Weekly schedule
+- [x] Events with countdown
+- [x] WebSocket (timer trigger)
+- [x] Child view UI
+- [x] Parent admin UI
+- [x] Weather module (Open-Meteo)
+- [x] i18n (sv + en)
+- [x] PWA manifest
 
-**v2 scope (future):**
+---
+
+## v1 Post-Launch Fixes
+
+These are fixes added after v1 launch. Implement as v1 patches (not v2 features).
+
+### Shipped fixes ✅
+
+**Fix 1 — Mood cooldown (once/hour)** ✅
+- Backend: `routes/child.ts` uses `Date.now() - 3600000` (oneHourAgo); added `GET /child/mood/status`
+- Frontend: store holds `moodCooldownEndsAt: number | null`; MoodCheckIn shows live countdown
+
+**Fix 2 — Weather location picker** ✅
+- Bug was double `/api/v1/` prefix on axios client; fixed URL to `client.put('/modules/weather-openmeteo/config', ...)`
+- Added `onMouseDown` + `e.preventDefault()` on suggestions to prevent blur-before-click
+
+**Fix 3 — Emoji picker** ✅
+- `frontend/src/components/EmojiPicker.tsx` — ~200 emojis, 8 categories, click-outside-to-close
+- Integrated into Tasks, Schedule, Events, Rewards, Timer label
+
+**Fix 4 — Weekly schedule size (child view)** ✅
+- Horizontal scroll on phone (`overflow-x-auto`, `min-w-[420px]`)
+- Larger cells with emoji + time; today highlighted with yellow header + ring
+- Today's items expanded as full list below the grid
+
+**Fix 5 — Timer improvements** ✅
+- Tap-to-minimize: fullscreen → compact amber bar in clock panel
+- Auto-returns to fullscreen when ≤ 60 s remaining
+- Web Audio API chime (C5→G4→C4) on timer end — no library
+- Parent: free-text minute input + `<input type="time">` clock-target + EmojiPicker in label
+
+**Fix 6 — Child colour theme** ✅
+- `GET /child/theme` → `{ accentColor: string }` from `settings` table
+- 8 predefined accent colours in parent Settings, saved to `settings.child.accentColor`
+- Child view applies colour as `linear-gradient(135deg, ${accent}ee, ${accent}99)`
+- Default: `#1565C0` (Ebbe blue)
+
+---
+
+## v2 scope (future)
 - [ ] Math game module
 - [ ] Home Assistant integration
 - [ ] Module manager UI
 - [ ] Capacitor APK build
 
-**v3 scope (future):**
+## v3 scope (future)
 - [ ] AI conversation module
 - [ ] AI mood pattern analysis
 - [ ] AI memory compression system

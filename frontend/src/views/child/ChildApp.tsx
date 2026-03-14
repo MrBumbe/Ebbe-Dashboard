@@ -30,18 +30,22 @@ export default function ChildApp() {
     store.setToken(token);
 
     async function loadAll() {
-      const [t, sc, ev, bal, wx] = await Promise.allSettled([
+      const [t, sc, ev, bal, wx, ms, th] = await Promise.allSettled([
         childApi.getTasks(token),
         childApi.getSchedule(token),
         childApi.getEvents(token),
         childApi.getBalance(token),
         childApi.getWeather(token),
+        childApi.getMoodStatus(token),
+        childApi.getTheme(token),
       ]);
       if (t.status === 'fulfilled') store.setTasks(t.value);
       if (sc.status === 'fulfilled') store.setSchedule(sc.value);
       if (ev.status === 'fulfilled') store.setEvents(ev.value);
       if (bal.status === 'fulfilled') store.setBalance(bal.value.balance);
       if (wx.status === 'fulfilled') store.setWeather(wx.value);
+      if (ms.status === 'fulfilled') store.setMoodCooldown(ms.value.cooldownEndsAt);
+      if (th.status === 'fulfilled') store.setAccentColor(th.value.accentColor);
     }
 
     void loadAll();
@@ -84,9 +88,12 @@ export default function ChildApp() {
   async function handleMood(mood: string) {
     try {
       await childApi.logMood(token, mood);
-      store.setMoodLoggedToday(true);
+      store.setMoodCooldown(Date.now() + 60 * 60 * 1000);
     } catch (err: unknown) {
-      if ((err as { code?: string }).code === 'ALREADY_LOGGED') store.setMoodLoggedToday(true);
+      const e = err as { code?: string; cooldownEndsAt?: number };
+      if (e.code === 'ALREADY_LOGGED') {
+        store.setMoodCooldown(e.cooldownEndsAt ?? Date.now() + 60 * 60 * 1000);
+      }
     }
   }
 
@@ -98,27 +105,52 @@ export default function ChildApp() {
     );
   }
 
-  const { tasks, balance, schedule, events, weather, moodLoggedToday, timer } = store;
+  const { tasks, balance, schedule, events, weather, moodCooldownEndsAt, timer, timerMinimized, accentColor } = store;
   const routine = getRoutine();
+  const accent = accentColor ?? '#1565C0';
+
+  // Derive gradient colours from accent
+  const bgStyle = {
+    background: `linear-gradient(135deg, ${accent}ee 0%, ${accent}99 100%)`,
+  };
 
   const weatherEmoji: Record<string, string> = {
     sunny: '☀️', cloudy: '☁️', rain: '🌧️', snow: '❄️', storm: '⛈️', fog: '🌫️',
   };
 
   return (
-    <div className="kiosk min-h-screen bg-gradient-to-br from-blue-600 to-blue-900 text-white">
+    <div className="kiosk min-h-screen text-white" style={bgStyle}>
 
-      {timer && (
-        <TimerAlert remaining={timer.remaining} totalSeconds={timer.totalSeconds} label={timer.label} />
+      {timer && !timerMinimized && (
+        <TimerAlert
+          remaining={timer.remaining}
+          totalSeconds={timer.totalSeconds}
+          label={timer.label}
+          onMinimize={store.toggleTimerMinimized}
+          accentColor={accent}
+        />
       )}
 
       {/* ── Main grid ─────────────────────────────────────────── */}
       <div className="flex flex-col gap-4 p-4 md:grid md:grid-cols-3 md:gap-6 md:p-6 xl:gap-8 xl:p-10">
 
-        {/* LEFT: Clock + Stars + Weather */}
+        {/* LEFT: Clock + Stars + Weather + compact timer bar */}
         <div className="flex flex-col gap-4 xl:gap-6">
           <div className="bg-white/10 rounded-2xl p-4 xl:p-8 flex flex-col items-center gap-4">
             <Clock />
+            {/* Compact timer bar — shown when timer is minimized */}
+            {timer && timerMinimized && (
+              <button
+                onClick={store.toggleTimerMinimized}
+                className="w-full flex items-center gap-3 bg-amber-500/80 hover:bg-amber-500 rounded-xl px-4 py-3 transition-colors"
+              >
+                <span className="text-2xl">{timer.label.match(/\p{Emoji}/u)?.[0] ?? '⏱️'}</span>
+                <span className="flex-1 text-sm font-semibold truncate text-left">{timer.label.replace(/\p{Emoji}/gu, '').trim() || timer.label}</span>
+                <span className="text-lg font-bold tabular-nums">
+                  {String(Math.floor(timer.remaining / 60)).padStart(2, '0')}:{String(timer.remaining % 60).padStart(2, '0')}
+                </span>
+              </button>
+            )}
           </div>
           <RewardDisplay balance={balance} />
           {weather && (
@@ -139,7 +171,7 @@ export default function ChildApp() {
 
         {/* RIGHT: Mood + Events + Schedule — large screen only */}
         <div className="hidden xl:flex xl:flex-col xl:gap-6">
-          <MoodCheckIn alreadyLogged={moodLoggedToday} onMood={handleMood} />
+          <MoodCheckIn cooldownEndsAt={moodCooldownEndsAt} onMood={handleMood} />
           {events.length > 0 && <UpcomingEvent events={events} />}
           <WeekSchedule items={schedule} />
         </div>
@@ -148,7 +180,7 @@ export default function ChildApp() {
       {/* Phone/tablet: Mood + Events + Schedule stacked below */}
       <div className="xl:hidden flex flex-col gap-4 px-4 pb-8 md:px-6 md:grid md:grid-cols-3">
         <div className="md:col-span-1">
-          <MoodCheckIn alreadyLogged={moodLoggedToday} onMood={handleMood} />
+          <MoodCheckIn cooldownEndsAt={moodCooldownEndsAt} onMood={handleMood} />
         </div>
         {events.length > 0 && (
           <div className="md:col-span-2">
