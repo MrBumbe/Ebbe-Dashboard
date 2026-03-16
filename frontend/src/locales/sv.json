@@ -121,6 +121,15 @@
       "send":    "Skicka till skärmen",
       "cancel":  "Avbryt timer"
     },
+    "schedule": {
+      "addItem":      "Lägg till post",
+      "editItem":     "Redigera post",
+      "titlePlaceholder": "Titel",
+      "recurring":    "Återkommer varje vecka",
+      "specificDate": "Specifikt datum (engångshändelse)",
+      "annualDate":   "Årsdatum",
+      "clearDate":    "Använd veckodag istället"
+    },
     "layout": {
       "title": "Barnets skärmlayout",
       "hint":  "Aktivera, inaktivera och ordna om widgets på barnets skärm.",

@@ -67,15 +67,15 @@ export default function ChildHeader({
           {/* Weekday */}
           <span className="text-sm xl:text-base opacity-80">{weekdayName}</span>
 
-          {/* Stars */}
+          {/* Stars — no card background, inline like weather */}
           {tappable ? (
-            <button onClick={onStarTap} className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 active:scale-95 rounded-xl px-3 py-1.5 transition-all">
-              <span className="text-xl">⭐</span>
+            <button onClick={onStarTap} className="flex items-center gap-1.5 active:scale-95 transition-transform min-h-[44px] px-1">
+              <span className="text-xl xl:text-2xl">⭐</span>
               <span className="text-base xl:text-xl font-bold tabular-nums">{balance}</span>
             </button>
           ) : (
             <div className="flex items-center gap-1.5">
-              <span className="text-xl">⭐</span>
+              <span className="text-xl xl:text-2xl">⭐</span>
               <span className="text-base xl:text-xl font-bold tabular-nums">{balance}</span>
             </div>
           )}
@@ -107,6 +107,10 @@ export default function ChildHeader({
     ? 'text-4xl md:text-6xl xl:text-8xl'
     : 'text-3xl md:text-5xl xl:text-6xl';
 
+  // Weather and star emoji are the same size per level for visual balance
+  const iconCls = level === 1 ? 'text-4xl xl:text-5xl' : 'text-3xl xl:text-4xl';
+  const balanceCls = level === 1 ? 'text-4xl xl:text-6xl' : 'text-3xl xl:text-4xl';
+
   return (
     <div className="flex-shrink-0 px-4 pt-4 xl:px-6 xl:pt-6">
       <div className="grid grid-cols-3 gap-4 xl:gap-6 items-center bg-white/10 rounded-2xl p-4 xl:p-6">
@@ -115,7 +119,7 @@ export default function ChildHeader({
         <div className="flex flex-col gap-1">
           {weatherEmoji && (
             <div className="flex items-center gap-2">
-              <span className={level === 1 ? 'text-4xl xl:text-5xl' : 'text-3xl xl:text-4xl'}>{weatherEmoji}</span>
+              <span className={iconCls}>{weatherEmoji}</span>
               {weather && (
                 <span className={`font-bold ${level === 1 ? 'text-3xl xl:text-4xl' : 'text-xl xl:text-3xl'}`}>
                   {weather.temperature}°
@@ -138,21 +142,21 @@ export default function ChildHeader({
           <AnalogClock date={now} sizeCls={analogSizeCls} />
         </div>
 
-        {/* Right — star balance */}
-        <div className="flex flex-col items-end">
+        {/* Right — star balance, no card background */}
+        <div className="flex flex-col items-end justify-center">
           {tappable ? (
             <button
               onClick={onStarTap}
-              className="flex flex-col items-center bg-white/10 hover:bg-white/20 active:scale-95 rounded-2xl px-4 py-3 xl:px-6 xl:py-4 transition-all w-full"
+              className="flex flex-col items-center gap-1 active:scale-95 transition-transform min-h-[60px] px-2"
             >
-              <span className={level === 1 ? 'text-5xl xl:text-7xl' : 'text-4xl xl:text-5xl'}>⭐</span>
-              <span className={`font-bold tabular-nums ${level === 1 ? 'text-4xl xl:text-6xl' : 'text-3xl xl:text-4xl'}`}>{balance}</span>
-              <span className="text-xs opacity-60 mt-1">{t('child.stars.tapToOpen')}</span>
+              <span className={iconCls}>⭐</span>
+              <span className={`font-bold tabular-nums ${balanceCls}`}>{balance}</span>
+              <span className="text-xs opacity-60">{t('child.stars.tapToOpen')}</span>
             </button>
           ) : (
-            <div className="flex flex-col items-center bg-white/10 rounded-2xl px-4 py-3 xl:px-6 xl:py-4 w-full">
-              <span className={level === 1 ? 'text-5xl xl:text-7xl' : 'text-4xl xl:text-5xl'}>⭐</span>
-              <span className={`font-bold tabular-nums ${level === 1 ? 'text-4xl xl:text-6xl' : 'text-3xl xl:text-4xl'}`}>{balance}</span>
+            <div className="flex flex-col items-center gap-1 px-2">
+              <span className={iconCls}>⭐</span>
+              <span className={`font-bold tabular-nums ${balanceCls}`}>{balance}</span>
             </div>
           )}
         </div>

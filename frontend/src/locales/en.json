@@ -121,6 +121,15 @@
       "send":    "Send to screen",
       "cancel":  "Cancel timer"
     },
+    "schedule": {
+      "addItem":      "Add item",
+      "editItem":     "Edit item",
+      "titlePlaceholder": "Title",
+      "recurring":    "Recurring every week",
+      "specificDate": "Specific date (one-time)",
+      "annualDate":   "Annual date",
+      "clearDate":    "Use weekday instead"
+    },
     "layout": {
       "title": "Child screen layout",
       "hint":  "Enable, disable, and reorder widgets on the child screen.",
