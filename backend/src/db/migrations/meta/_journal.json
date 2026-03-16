@@ -15,6 +15,20 @@
       "when": 1773900000000,
       "tag": "0001_v2_features",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1773950000000,
+      "tag": "0002_schedule_date_fields",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1774000000000,
+      "tag": "0003_users_children_invites",
+      "breakpoints": true
     }
   ]
 }
