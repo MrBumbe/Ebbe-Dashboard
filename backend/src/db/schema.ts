@@ -51,11 +51,13 @@ export const taskCompletions = sqliteTable('task_completions', {
 export const scheduleItems = sqliteTable('schedule_items', {
   id:           text('id').primaryKey(),
   familyId:     text('family_id').notNull().references(() => families.id),
-  dayOfWeek:    integer('day_of_week').notNull(), // 0=Mon … 6=Sun
+  dayOfWeek:    integer('day_of_week').notNull(), // 0=Mon … 6=Sun; computed from specificDate when isRecurring=false
   timeStart:    text('time_start').notNull(),     // "HH:MM"
   title:        text('title').notNull(),
   emoji:        text('emoji').notNull().default('📅'),
   color:        text('color').notNull().default('#4A90D9'),
+  isRecurring:  integer('is_recurring', { mode: 'boolean' }).notNull().default(true),
+  specificDate: integer('specific_date'),         // unix ms; one-time date (isRecurring=false) or annual anchor (isRecurring=true)
 });
 
 // ── One-off events with countdown ───────────────────────────
@@ -64,8 +66,9 @@ export const events = sqliteTable('events', {
   familyId:     text('family_id').notNull().references(() => families.id),
   title:        text('title').notNull(),
   emoji:        text('emoji').notNull().default('🎉'),
-  eventDate:    integer('event_date').notNull(), // unix ms
+  eventDate:    integer('event_date').notNull(), // unix ms; next occurrence date (kept in sync with specificDate for annual events)
   isVisible:    integer('is_visible', { mode: 'boolean' }).notNull().default(true),
+  specificDate: integer('specific_date'),        // unix ms; annual anchor date for recurring events (e.g. birthdays)
 });
 
 // ── Mood log ─────────────────────────────────────────────────

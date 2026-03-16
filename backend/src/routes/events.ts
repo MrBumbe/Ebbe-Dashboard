@@ -20,8 +20,8 @@ router.get('/', (req: AuthRequest, res: Response) => {
 
 // POST /api/v1/events
 router.post('/', requireRole('admin', 'parent'), (req: AuthRequest, res: Response) => {
-  const { title, emoji, eventDate, isVisible } = req.body as {
-    title?: string; emoji?: string; eventDate?: number; isVisible?: boolean;
+  const { title, emoji, eventDate, isVisible, specificDate } = req.body as {
+    title?: string; emoji?: string; eventDate?: number; isVisible?: boolean; specificDate?: number | null;
   };
   const familyId = req.user!.familyId;
 
@@ -37,6 +37,7 @@ router.post('/', requireRole('admin', 'parent'), (req: AuthRequest, res: Respons
     emoji: emoji ?? '🎉',
     eventDate,
     isVisible: isVisible ?? true,
+    specificDate: specificDate ?? null,
   }).run();
 
   const created = db.select().from(events).where(eq(events.id, id)).get();
@@ -56,8 +57,8 @@ router.patch('/:id', requireRole('admin', 'parent'), (req: AuthRequest, res: Res
     return;
   }
 
-  const { title, emoji, eventDate, isVisible } = req.body as {
-    title?: string; emoji?: string; eventDate?: number; isVisible?: boolean;
+  const { title, emoji, eventDate, isVisible, specificDate } = req.body as {
+    title?: string; emoji?: string; eventDate?: number; isVisible?: boolean; specificDate?: number | null;
   };
 
   db.update(events).set({
@@ -65,6 +66,7 @@ router.patch('/:id', requireRole('admin', 'parent'), (req: AuthRequest, res: Res
     ...(emoji !== undefined && { emoji }),
     ...(eventDate !== undefined && { eventDate }),
     ...(isVisible !== undefined && { isVisible }),
+    ...(specificDate !== undefined && { specificDate }),
   }).where(and(eq(events.id, id), eq(events.familyId, familyId))).run();
 
   res.json({ data: db.select().from(events).where(eq(events.id, id)).get() });

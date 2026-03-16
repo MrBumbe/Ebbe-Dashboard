@@ -8,6 +8,7 @@ import {
 } from '../db/schema';
 import { requireChildToken, ChildRequest } from '../middleware/childAuth';
 import { broadcastToFamily } from '../websocket';
+import { resolveItemsForWeek } from '../lib/scheduleDate';
 
 const router = Router();
 router.use(requireChildToken);
@@ -149,7 +150,7 @@ router.post('/tasks/:id/complete', (req: ChildRequest, res: Response) => {
   res.status(201).json({ data: { starsAwarded: task.starValue, balance } });
 });
 
-// GET /api/v1/child/schedule — full weekly schedule
+// GET /api/v1/child/schedule — weekly schedule resolved for current week
 router.get('/schedule', (req: ChildRequest, res: Response) => {
   const db = getDb();
   const familyId = req.familyId!;
@@ -159,7 +160,14 @@ router.get('/schedule', (req: ChildRequest, res: Response) => {
     .orderBy(asc(scheduleItems.dayOfWeek), asc(scheduleItems.timeStart))
     .all();
 
-  res.json({ data: rows });
+  // Resolve date-specific items for the current week; pure weekly items always pass through.
+  // Return dayOfWeek as effectiveDayOfWeek so the child UI needs no changes.
+  const resolved = resolveItemsForWeek(rows).map(item => ({
+    ...item,
+    dayOfWeek: item.effectiveDayOfWeek,
+  }));
+
+  res.json({ data: resolved });
 });
 
 // GET /api/v1/child/events — upcoming visible events

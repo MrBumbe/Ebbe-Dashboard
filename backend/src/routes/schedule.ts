@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto';
 import { getDb } from '../db';
 import { scheduleItems } from '../db/schema';
 import { requireAuth, requireRole, AuthRequest } from '../middleware/auth';
+import { jsToEbbeDay } from '../lib/scheduleDate';
 
 const router = Router();
 
@@ -24,26 +25,50 @@ router.get('/', (req: AuthRequest, res: Response) => {
 
 // POST /api/v1/schedule — create a schedule item
 router.post('/', requireRole('admin', 'parent'), (req: AuthRequest, res: Response) => {
-  const { dayOfWeek, timeStart, title, emoji, color } = req.body as {
+  const { dayOfWeek, timeStart, title, emoji, color, isRecurring, specificDate } = req.body as {
     dayOfWeek?: number;
     timeStart?: string;
     title?: string;
     emoji?: string;
     color?: string;
+    isRecurring?: boolean;
+    specificDate?: number | null;
   };
   const familyId = req.user!.familyId;
 
-  if (dayOfWeek === undefined || !timeStart || !title) {
-    res.status(400).json({ error: { code: 'MISSING_FIELDS', message: 'dayOfWeek, timeStart, and title are required' } });
-    return;
-  }
-  if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) {
-    res.status(400).json({ error: { code: 'INVALID_DAY', message: 'dayOfWeek must be 0 (Mon) through 6 (Sun)' } });
+  if (!timeStart || !title) {
+    res.status(400).json({ error: { code: 'MISSING_FIELDS', message: 'timeStart and title are required' } });
     return;
   }
   if (!/^\d{2}:\d{2}$/.test(timeStart)) {
     res.status(400).json({ error: { code: 'INVALID_TIME', message: 'timeStart must be HH:MM format' } });
     return;
+  }
+
+  const recurring = isRecurring !== false; // default true
+
+  // Compute effective dayOfWeek
+  let effectiveDayOfWeek: number;
+  if (!recurring && specificDate) {
+    // One-time: derive dayOfWeek from the specific date
+    effectiveDayOfWeek = jsToEbbeDay(new Date(specificDate).getDay());
+  } else if (recurring && specificDate) {
+    // Annual: derive from the anchor date in current year
+    const anchor = new Date(specificDate);
+    const thisYear = new Date().getFullYear();
+    const occurrence = new Date(thisYear, anchor.getMonth(), anchor.getDate());
+    effectiveDayOfWeek = jsToEbbeDay(occurrence.getDay());
+  } else {
+    // Pure weekly: dayOfWeek is required
+    if (dayOfWeek === undefined) {
+      res.status(400).json({ error: { code: 'MISSING_FIELDS', message: 'dayOfWeek is required when no specificDate is set' } });
+      return;
+    }
+    if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) {
+      res.status(400).json({ error: { code: 'INVALID_DAY', message: 'dayOfWeek must be 0 (Mon) through 6 (Sun)' } });
+      return;
+    }
+    effectiveDayOfWeek = dayOfWeek;
   }
 
   const db = getDb();
@@ -52,11 +77,13 @@ router.post('/', requireRole('admin', 'parent'), (req: AuthRequest, res: Respons
   db.insert(scheduleItems).values({
     id,
     familyId,
-    dayOfWeek,
+    dayOfWeek: effectiveDayOfWeek,
     timeStart,
     title,
     emoji: emoji ?? '📅',
     color: color ?? '#4A90D9',
+    isRecurring: recurring,
+    specificDate: specificDate ?? null,
   }).run();
 
   const created = db.select().from(scheduleItems).where(eq(scheduleItems.id, id)).get();
@@ -78,30 +105,54 @@ router.patch('/:id', requireRole('admin', 'parent'), (req: AuthRequest, res: Res
     return;
   }
 
-  const { dayOfWeek, timeStart, title, emoji, color } = req.body as {
+  const { dayOfWeek, timeStart, title, emoji, color, isRecurring, specificDate } = req.body as {
     dayOfWeek?: number;
     timeStart?: string;
     title?: string;
     emoji?: string;
     color?: string;
+    isRecurring?: boolean;
+    specificDate?: number | null;
   };
 
-  if (dayOfWeek !== undefined && (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6)) {
-    res.status(400).json({ error: { code: 'INVALID_DAY', message: 'dayOfWeek must be 0 (Mon) through 6 (Sun)' } });
-    return;
-  }
   if (timeStart !== undefined && !/^\d{2}:\d{2}$/.test(timeStart)) {
     res.status(400).json({ error: { code: 'INVALID_TIME', message: 'timeStart must be HH:MM format' } });
     return;
   }
 
+  // Re-compute dayOfWeek if isRecurring or specificDate changed
+  const newRecurring = isRecurring !== undefined ? isRecurring : existing.isRecurring;
+  const newSpecificDate = specificDate !== undefined ? specificDate : existing.specificDate;
+
+  let newDayOfWeek: number | undefined;
+  if (isRecurring !== undefined || specificDate !== undefined) {
+    if (!newRecurring && newSpecificDate) {
+      newDayOfWeek = jsToEbbeDay(new Date(newSpecificDate).getDay());
+    } else if (newRecurring && newSpecificDate) {
+      const anchor = new Date(newSpecificDate);
+      const thisYear = new Date().getFullYear();
+      const occurrence = new Date(thisYear, anchor.getMonth(), anchor.getDate());
+      newDayOfWeek = jsToEbbeDay(occurrence.getDay());
+    } else if (dayOfWeek !== undefined) {
+      newDayOfWeek = dayOfWeek;
+    }
+  } else if (dayOfWeek !== undefined) {
+    if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) {
+      res.status(400).json({ error: { code: 'INVALID_DAY', message: 'dayOfWeek must be 0 (Mon) through 6 (Sun)' } });
+      return;
+    }
+    newDayOfWeek = dayOfWeek;
+  }
+
   db.update(scheduleItems)
     .set({
-      ...(dayOfWeek !== undefined && { dayOfWeek }),
+      ...(newDayOfWeek !== undefined && { dayOfWeek: newDayOfWeek }),
       ...(timeStart !== undefined && { timeStart }),
       ...(title !== undefined && { title }),
       ...(emoji !== undefined && { emoji }),
       ...(color !== undefined && { color }),
+      ...(isRecurring !== undefined && { isRecurring }),
+      ...(specificDate !== undefined && { specificDate }),
     })
     .where(and(eq(scheduleItems.id, id), eq(scheduleItems.familyId, familyId)))
     .run();
