@@ -73,7 +73,10 @@
       "mood":      "Humörlogg",
       "timer":     "Timer",
       "layout":    "Layout",
-      "settings":  "Inställningar"
+      "children":  "Barn",
+      "settings":  "Inställningar",
+      "users":     "Användare",
+      "logout":    "Logga ut"
     },
     "login": {
       "title":    "Logga in",
@@ -134,6 +137,71 @@
       "title": "Barnets skärmlayout",
       "hint":  "Aktivera, inaktivera och ordna om widgets på barnets skärm.",
       "page":  "Sida {{number}}"
+    },
+    "users": {
+      "title":              "Användarhantering",
+      "familyName":         "Familjenamn",
+      "members":            "Familjemedlemmar",
+      "edit":               "Redigera",
+      "roleAdmin":          "Förälder",
+      "roleParent":         "Anhörig",
+      "roleTitlePlaceholder": "Anpassad rolltitel (valfritt)",
+      "mustChangePassword": "Måste byta lösenord",
+      "inviteNew":          "Bjud in ny användare",
+      "inviteRole":         "Roll",
+      "generateLink":       "Generera inbjudningslänk",
+      "inviteLinkReady":    "Inbjudningslänk klar — dela den manuellt:",
+      "inviteExpires":      "Går ut: {{time}}",
+      "confirmDelete":      "Ta bort användare {{name}}?",
+      "resetPassword":      "Återställ lösenord…",
+      "tempPasswordLabel":  "Tillfälligt lösenord (dela säkert):",
+      "tempPasswordHint":   "Användaren måste byta detta vid nästa inloggning.",
+      "namePlaceholder":    "Visningsnamn",
+      "phonePlaceholder":   "Telefonnummer"
+    },
+    "children": {
+      "title":          "Barn",
+      "add":            "Lägg till barn",
+      "empty":          "Inga barn tillagda ännu.",
+      "namePlaceholder": "Barnets namn",
+      "birthdate":      "Födelsedag",
+      "born":           "Född",
+      "copy":           "Kopiera URL",
+      "copied":         "Kopierat!",
+      "manage":         "Hantera barn…",
+      "tokenHint":      "Varje barn får sin egen kiosk-URL. Använd den i Fully Kiosk Browser eller valfri surfplattebrowser.",
+      "confirmDelete":  "Ta bort {{name}}?"
+    },
+    "join": {
+      "title":            "Skapa ditt konto",
+      "subtitle":         "Du har bjudits in att gå med i en familj på Ebbe.",
+      "name":             "Ditt namn",
+      "phone":            "Telefonnummer (valfritt)",
+      "phonePlaceholder": "t.ex. +46 70 123 45 67",
+      "confirmPassword":  "Bekräfta lösenord",
+      "submit":           "Skapa konto",
+      "invalidToken":     "Den här inbjudningslänken är ogiltig eller saknas.",
+      "tokenExpired":     "Den här inbjudningslänken har gått ut. Be om en ny.",
+      "tokenUsed":        "Den här inbjudningslänken har redan använts.",
+      "emailTaken":       "Ett konto med den e-postadressen finns redan.",
+      "passwordMismatch": "Lösenorden matchar inte."
+    },
+    "changePassword": {
+      "title":        "Byt lösenord",
+      "subtitle":     "En administratör har återställt ditt lösenord. Ange ett nytt innan du fortsätter.",
+      "current":      "Nuvarande (tillfälligt) lösenord",
+      "new":          "Nytt lösenord",
+      "submit":       "Ange nytt lösenord",
+      "wrongCurrent": "Det nuvarande lösenordet stämmer inte."
+    },
+    "profile": {
+      "title":        "Din profil",
+      "info":         "Kontoinformation",
+      "role":         "Roll",
+      "appearance":   "Utseende",
+      "darkMode":     "Mörkt läge",
+      "adminSection": "Administration",
+      "saved":        "Sparad"
     },
     "settings": {
       "title":              "Inställningar",

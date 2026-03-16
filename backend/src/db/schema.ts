@@ -10,13 +10,40 @@ export const families = sqliteTable('families', {
 
 // ── Users (parents / guardians) ─────────────────────────────
 export const users = sqliteTable('users', {
-  id:           text('id').primaryKey(),
-  familyId:     text('family_id').notNull().references(() => families.id),
-  name:         text('name').notNull(),
-  email:        text('email').notNull().unique(),
-  passwordHash: text('password_hash').notNull(),
-  role:         text('role', { enum: ['admin', 'parent', 'readonly'] }).notNull().default('parent'),
-  createdAt:    integer('created_at').notNull(),
+  id:                 text('id').primaryKey(),
+  familyId:           text('family_id').notNull().references(() => families.id),
+  name:               text('name').notNull(),
+  email:              text('email').notNull().unique(),
+  passwordHash:       text('password_hash').notNull(),
+  role:               text('role', { enum: ['admin', 'parent', 'readonly'] }).notNull().default('parent'),
+  phone:              text('phone'),
+  roleTitle:          text('role_title'),      // custom display name for role, e.g. "Parent", "Relative"
+  mustChangePassword: integer('must_change_password', { mode: 'boolean' }).notNull().default(false),
+  createdAt:          integer('created_at').notNull(),
+});
+
+// ── Invite tokens ─────────────────────────────────────────
+export const inviteTokens = sqliteTable('invite_tokens', {
+  id:         text('id').primaryKey(),
+  familyId:   text('family_id').notNull().references(() => families.id),
+  token:      text('token').notNull().unique(),
+  role:       text('role').notNull(),          // "admin" | "parent"
+  createdBy:  text('created_by').notNull(),    // userId of admin who created it
+  expiresAt:  integer('expires_at').notNull(), // unix ms
+  usedAt:     integer('used_at'),              // unix ms; null = not yet used
+  createdAt:  integer('created_at').notNull(),
+});
+
+// ── Children ─────────────────────────────────────────────
+export const children = sqliteTable('children', {
+  id:         text('id').primaryKey(),
+  familyId:   text('family_id').notNull().references(() => families.id),
+  name:       text('name').notNull(),
+  emoji:      text('emoji').notNull().default('🧒'),
+  color:      text('color').notNull().default('#1565C0'),
+  birthdate:  integer('birthdate'),            // unix ms; optional
+  childToken: text('child_token').notNull().unique(),
+  createdAt:  integer('created_at').notNull(),
 });
 
 // ── Routine tasks ────────────────────────────────────────────

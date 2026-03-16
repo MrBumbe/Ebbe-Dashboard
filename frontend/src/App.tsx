@@ -1,8 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
-const ChildApp  = lazy(() => import('./views/child/ChildApp'));
-const ParentApp = lazy(() => import('./views/parent/ParentApp'));
-const Login     = lazy(() => import('./views/parent/Login'));
+const ChildApp       = lazy(() => import('./views/child/ChildApp'));
+const ParentApp      = lazy(() => import('./views/parent/ParentApp'));
+const Login          = lazy(() => import('./views/parent/Login'));
+const Join           = lazy(() => import('./views/parent/Join'));
 
 function LoadingScreen() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
 
           {/* Parent admin panel */}
           <Route path="/parent/login" element={<Login />} />
+          <Route path="/parent/join"  element={<Join />} />
           <Route path="/parent/*"     element={<ParentApp />} />
 
           {/* Default redirect */}

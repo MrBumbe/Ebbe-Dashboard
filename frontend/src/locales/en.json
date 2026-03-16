@@ -73,7 +73,10 @@
       "mood":      "Mood log",
       "timer":     "Timer",
       "layout":    "Layout",
-      "settings":  "Settings"
+      "children":  "Children",
+      "settings":  "Settings",
+      "users":     "Users",
+      "logout":    "Log out"
     },
     "login": {
       "title":    "Log in",
@@ -134,6 +137,71 @@
       "title": "Child screen layout",
       "hint":  "Enable, disable, and reorder widgets on the child screen.",
       "page":  "Page {{number}}"
+    },
+    "users": {
+      "title":              "User management",
+      "familyName":         "Family name",
+      "members":            "Family members",
+      "edit":               "Edit",
+      "roleAdmin":          "Parent",
+      "roleParent":         "Relative",
+      "roleTitlePlaceholder": "Custom role name (optional)",
+      "mustChangePassword": "Must change password",
+      "inviteNew":          "Invite new user",
+      "inviteRole":         "Role",
+      "generateLink":       "Generate invite link",
+      "inviteLinkReady":    "Invite link ready — share it manually:",
+      "inviteExpires":      "Expires: {{time}}",
+      "confirmDelete":      "Delete user {{name}}?",
+      "resetPassword":      "Reset password…",
+      "tempPasswordLabel":  "Temporary password (share securely):",
+      "tempPasswordHint":   "The user must change this on next login.",
+      "namePlaceholder":    "Display name",
+      "phonePlaceholder":   "Phone number"
+    },
+    "children": {
+      "title":          "Children",
+      "add":            "Add child",
+      "empty":          "No children added yet.",
+      "namePlaceholder": "Child's name",
+      "birthdate":      "Date of birth",
+      "born":           "Born",
+      "copy":           "Copy URL",
+      "copied":         "Copied!",
+      "manage":         "Manage children…",
+      "tokenHint":      "Each child gets their own kiosk URL. Use this in Fully Kiosk Browser or any tablet browser.",
+      "confirmDelete":  "Remove {{name}}?"
+    },
+    "join": {
+      "title":            "Create your account",
+      "subtitle":         "You've been invited to join a family on Ebbe.",
+      "name":             "Your name",
+      "phone":            "Phone number (optional)",
+      "phonePlaceholder": "e.g. +46 70 123 45 67",
+      "confirmPassword":  "Confirm password",
+      "submit":           "Create account",
+      "invalidToken":     "This invite link is invalid or missing.",
+      "tokenExpired":     "This invite link has expired. Ask for a new one.",
+      "tokenUsed":        "This invite link has already been used.",
+      "emailTaken":       "An account with that email already exists.",
+      "passwordMismatch": "Passwords do not match."
+    },
+    "changePassword": {
+      "title":        "Change your password",
+      "subtitle":     "An admin has reset your password. Please set a new one before continuing.",
+      "current":      "Current (temporary) password",
+      "new":          "New password",
+      "submit":       "Set new password",
+      "wrongCurrent": "The current password is incorrect."
+    },
+    "profile": {
+      "title":       "Your profile",
+      "info":        "Account info",
+      "role":        "Role",
+      "appearance":  "Appearance",
+      "darkMode":    "Dark mode",
+      "adminSection": "Admin",
+      "saved":       "Saved"
     },
     "settings": {
       "title":              "Settings",

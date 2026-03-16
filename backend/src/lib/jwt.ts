@@ -1,10 +1,12 @@
 import jwt from 'jsonwebtoken';
 import { config } from '../config';
 
-interface JwtPayload {
+export interface JwtPayload {
   userId: string;
   familyId: string;
   role: string;
+  name: string;
+  mustChangePassword: boolean;
 }
 
 export function signAccessToken(payload: JwtPayload): string {

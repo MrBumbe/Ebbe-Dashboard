@@ -1,6 +1,6 @@
 # Ebbe — Build Status
 
-Last updated: 2026-03-16 (session 7)
+Last updated: 2026-03-16 (session 8)
 
 ---
 
@@ -20,7 +20,7 @@ Last updated: 2026-03-16 (session 7)
 
 | File | Status | Endpoints |
 |---|---|---|
-| `routes/auth.ts` | ✅ Done | `POST /api/v1/auth/login`, `POST /api/v1/auth/refresh` |
+| `routes/auth.ts` | ✅ Done | `POST /api/v1/auth/login`, `POST /api/v1/auth/refresh` — JWT payload now includes `name` + `mustChangePassword` |
 | `routes/tasks.ts` | ✅ Done | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id`, `POST /:id/complete` — broadcasts TASK_UPDATED + STARS_UPDATED |
 | `routes/rewards.ts` | ✅ Done | Full CRUD, `GET /balance`, `GET /transactions`, `GET /requests`, `PATCH /requests/:id` (approve/deny), `POST /adjust` (manual) |
 | `routes/layouts.ts` | ✅ Done | `GET /`, `PUT /` (replace all), `PATCH /:widgetId` — broadcasts LAYOUT_UPDATED |
@@ -30,6 +30,9 @@ Last updated: 2026-03-16 (session 7)
 | `routes/events.ts` | ✅ Done | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id` |
 | `routes/child.ts` | ✅ Done | tasks (day/time filtered), complete, schedule, events, balance, transactions, rewards, reward requests, mood status/log, layout, settings (bundled), theme, weather |
 | `routes/setup.ts` | ✅ Done | First-run setup endpoint |
+| `routes/users.ts` | ✅ Done | `GET /` (admin), `GET /me`, `POST /invite` (admin), `POST /join` (public), `PATCH /me/password`, `PATCH /me/profile`, `PATCH /:id` (admin), `DELETE /:id` (admin), `POST /:id/reset-password` (admin) |
+| `routes/family.ts` | ✅ Done | `GET /`, `PATCH /` (admin) — get/update family name |
+| `routes/children.ts` | ✅ Done | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id` — per-child profiles with unique childTokens |
 
 ## Backend — Core
 
@@ -84,6 +87,10 @@ Last updated: 2026-03-16 (session 7)
 | `views/parent/Timer.tsx` | ✅ Done | |
 | `views/parent/Settings.tsx` | ✅ Done | Language, weather, accent colour, store/history toggles, inactivity timeout |
 | `views/parent/ModuleManager.tsx` | ✅ Done | Placeholder |
+| `views/parent/Users.tsx` | ✅ Done | Admin: list/edit/delete users, invite link generation, reset password, edit family name |
+| `views/parent/Children.tsx` | ✅ Done | List children, add/edit/delete, per-child kiosk URL with one-click copy |
+| `views/parent/Join.tsx` | ✅ Done | Public invite-token join flow — create account from invite link at `/parent/join?token=xxx` |
+| `views/parent/ChangePassword.tsx` | ✅ Done | Force-password-change screen shown when `mustChangePassword=true` |
 | PWA manifest + icon | ✅ Done | |
 
 ## Infrastructure
@@ -124,6 +131,49 @@ Everything through Fix 13 + session 6 fixes is shipped.
 
 - [ ] Clear test data from `data/ebbe.db` (not included in git — recreated on first run)
 - [ ] Tag `v0.1.0` release
+
+## Session 8 additions (2026-03-16)
+
+**Database changes:**
+- `users` table: added `mustChangePassword` (boolean, default false), `phone` (text, nullable), `roleTitle` (text, nullable)
+- New `invite_tokens` table: id, familyId, token (unique), role, createdBy, expiresAt, usedAt, createdAt
+- New `children` table: id, familyId, name, emoji, color, birthdate, childToken (unique), createdAt
+- Migration: `0003_users_children_invites.sql`
+
+**Backend:**
+- JWT payload extended: now includes `name` and `mustChangePassword` (used by frontend without extra API call)
+- `routes/users.ts`: full user management (list, invite, join, edit, delete, reset-password, me profile/password)
+- `routes/family.ts`: GET + PATCH family name
+- `routes/children.ts`: CRUD for named children with per-child tokens
+- `middleware/childAuth.ts`: now checks both `families.childToken` (legacy) and `children.childToken` (new)
+- `index.ts`: mounts `/api/v1/users`, `/api/v1/family`, `/api/v1/children`
+
+**Frontend:**
+- `useAuthStore.ts`: added `name`, `mustChangePassword`, `darkMode`, `setDarkMode`, `setMustChangePassword`
+- `tailwind.config.js`: `darkMode: 'class'` added
+- `ParentApp.tsx`: major overhaul — new sidebar footer (user pill + cog → profile panel + logout), child selector dropdown, profile slide-out panel (display name, phone, password change, dark mode toggle, admin link), dark mode `dark:` classes throughout, routes for Users + Children, `mustChangePassword` redirect
+- `App.tsx`: added `/parent/join` route (public, no auth required)
+- `Users.tsx`: admin user management — list users, edit name/role/roleTitle/phone, invite link, show temp password on reset
+- `Children.tsx`: manage children — add/edit/delete, colour picker, birthdate, kiosk URL copy
+- `Join.tsx`: invite link join page — public, no auth needed
+- `ChangePassword.tsx`: force password change screen (shown when admin resets password)
+- i18n: new strings in both `en.json` and `sv.json` — `parent.nav.{children,users,logout}`, `parent.users.*`, `parent.children.*`, `parent.join.*`, `parent.changePassword.*`, `parent.profile.*`
+
+**Role system:**
+- Two active roles: `admin` (default roleTitle: "Parent" / "Förälder") and `parent` (default roleTitle: "Relative" / "Anhörig")
+- Admin can: manage all users, reset passwords, invite, manage children, manage family name
+- Parent can: everything else (tasks, rewards, schedule, events, layout, settings, children)
+- `readonly` role remains in DB enum but is not exposed in UI
+
+**Children multi-token system:**
+- Each named child has their own `childToken`; child view tokens are per-child
+- Legacy `families.childToken` (from setup) continues to work (childAuth checks both)
+- `phone` field on users: prepared for future SMS/notification/emergency contact features (v3+)
+
+**Dark mode:**
+- Tailwind `class` strategy; toggle in profile panel
+- Preference stored in `localStorage` (`ebbe_dark`) and toggled by adding/removing `dark` class on `<html>`
+- DB persistence of dark mode preference is a v2 item (cross-device sync not yet implemented)
 
 ## Schema additions (session 7)
 

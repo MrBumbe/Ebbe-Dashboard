@@ -30,7 +30,13 @@ router.post('/login', (req: Request, res: Response) => {
     return;
   }
 
-  const payload = { userId: user.id, familyId: user.familyId, role: user.role };
+  const payload = {
+    userId: user.id,
+    familyId: user.familyId,
+    role: user.role,
+    name: user.name,
+    mustChangePassword: user.mustChangePassword,
+  };
   res.json({
     data: {
       accessToken: signAccessToken(payload),
@@ -63,7 +69,13 @@ router.post('/refresh', (req: Request, res: Response) => {
     return;
   }
 
-  const newPayload = { userId: user.id, familyId: user.familyId, role: user.role };
+  const newPayload = {
+    userId: user.id,
+    familyId: user.familyId,
+    role: user.role,
+    name: user.name,
+    mustChangePassword: user.mustChangePassword,
+  };
   res.json({
     data: {
       accessToken: signAccessToken(newPayload),
