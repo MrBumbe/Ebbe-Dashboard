@@ -39,7 +39,7 @@ function AnalogClock({ date }: { date: Date }) {
   );
 }
 
-export default function Clock() {
+export default function Clock({ compact }: { compact?: boolean }) {
   const [now, setNow] = useState(new Date());
   const { t } = useTranslation();
 
@@ -53,15 +53,25 @@ export default function Clock() {
 
   const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+  // Weekday in Ebbe convention: 0=Mon … 6=Sun
+  const jsDay = now.getDay();
+  const ebbeDay = jsDay === 0 ? 6 : jsDay - 1;
+  const weekdayName = t(`child.schedule.days.${ebbeDay}`);
+
   return (
     <div className="flex flex-col items-center gap-2 xl:gap-4">
-      <AnalogClock date={now} />
-      <div className="text-5xl md:text-6xl xl:text-8xl font-bold tracking-tight tabular-nums">
+      {!compact && <AnalogClock date={now} />}
+      <div className={`font-bold tracking-tight tabular-nums ${compact ? 'text-3xl xl:text-5xl' : 'text-5xl md:text-6xl xl:text-8xl'}`}>
         {timeStr}
       </div>
-      <div className="text-xl md:text-2xl xl:text-3xl font-medium opacity-90">
-        {greeting}
+      <div className={`opacity-70 font-medium ${compact ? 'text-xs xl:text-sm' : 'text-base md:text-lg xl:text-xl'}`}>
+        {weekdayName}
       </div>
+      {!compact && (
+        <div className="text-xl md:text-2xl xl:text-3xl font-medium opacity-90">
+          {greeting}
+        </div>
+      )}
     </div>
   );
 }

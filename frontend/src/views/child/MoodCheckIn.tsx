@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-const MOODS = [
+const ALL_MOODS = [
   { id: 'happy',   emoji: '😄' },
   { id: 'okay',    emoji: '🙂' },
   { id: 'sad',     emoji: '😔' },
@@ -13,10 +13,15 @@ const MOODS = [
 interface Props {
   cooldownEndsAt: number | null;
   onMood: (mood: string) => Promise<void>;
+  activeMoods?: string[]; // which moods to show; undefined = all
 }
 
-export default function MoodCheckIn({ cooldownEndsAt, onMood }: Props) {
+export default function MoodCheckIn({ cooldownEndsAt, onMood, activeMoods }: Props) {
   const { t } = useTranslation();
+
+  const moods = activeMoods
+    ? ALL_MOODS.filter(m => activeMoods.includes(m.id))
+    : ALL_MOODS;
 
   const isCoolingDown = cooldownEndsAt !== null && Date.now() < cooldownEndsAt;
 
@@ -36,19 +41,20 @@ export default function MoodCheckIn({ cooldownEndsAt, onMood }: Props) {
   }
 
   return (
-    <div className="bg-white/10 rounded-2xl px-4 py-4 xl:py-6">
-      <p className="text-lg md:text-xl xl:text-2xl font-medium mb-4 text-center">
+    <div className="bg-white/10 rounded-2xl px-3 py-3 xl:py-5">
+      <p className="text-base md:text-lg xl:text-xl font-medium mb-3 text-center">
         {t('child.mood.prompt')}
       </p>
-      <div className="flex flex-wrap justify-center gap-3 xl:gap-4">
-        {MOODS.map(({ id, emoji }) => (
+      {/* Single row — all moods fit at any supported width using flex-1 */}
+      <div className="flex gap-1 xl:gap-2">
+        {moods.map(({ id, emoji }) => (
           <button
             key={id}
             onClick={() => void onMood(id)}
-            className="flex flex-col items-center justify-center min-w-[60px] min-h-[60px] xl:min-w-[80px] xl:min-h-[80px] bg-white/10 hover:bg-white/25 active:scale-95 rounded-2xl px-3 py-2 xl:px-4 xl:py-3 transition-all"
+            className="flex-1 flex flex-col items-center justify-center min-h-[60px] xl:min-h-[80px] bg-white/10 hover:bg-white/25 active:scale-95 rounded-xl py-2 transition-all"
           >
-            <span className="text-3xl xl:text-4xl">{emoji}</span>
-            <span className="text-xs xl:text-sm mt-1 opacity-80">
+            <span className="text-2xl xl:text-3xl leading-none">{emoji}</span>
+            <span className="text-[9px] xl:text-xs mt-0.5 opacity-80 leading-tight text-center px-0.5">
               {t(`child.mood.${id}`)}
             </span>
           </button>
