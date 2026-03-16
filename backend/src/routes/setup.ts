@@ -7,7 +7,7 @@ import { Router, Request, Response } from 'express';
 import { randomUUID } from 'crypto';
 import { scryptSync, randomBytes } from 'crypto';
 import { getDb } from '../db';
-import { families, users, childLayouts } from '../db/schema';
+import { families, users, children, childLayouts } from '../db/schema';
 
 const router = Router();
 
@@ -62,6 +62,18 @@ router.post('/', (req: Request, res: Response) => {
     email: adminEmail,
     passwordHash: hashPassword(adminPassword),
     role: 'admin',
+    createdAt: now,
+  }).run();
+
+  // Create a default child entry using the family's child token
+  db.insert(children).values({
+    id: randomUUID(),
+    familyId,
+    name: 'Child',
+    emoji: '🧒',
+    color: '#1565C0',
+    birthdate: null,
+    childToken,
     createdAt: now,
   }).run();
 

@@ -127,6 +127,13 @@ Everything through Fix 13 + session 6 fixes is shipped.
 - Bug 6: Layout manager now shows widgets (backend returns DEFAULT_LAYOUT when DB is empty; setup seeds it; header widgets filtered from LayoutManager UI).
 - New: Redesigned child screen header — always-visible 3-column header (weather, clock+analog, stars) with 3 levels based on widget count. `AnalogClock.tsx` extracted as reusable component. `ChildHeader.tsx` created.
 
+## Session 9 fixes (2026-03-16)
+
+- Fix: Children page was empty for existing installs. Root cause: `POST /api/v1/setup` wrote the child token to `families.childToken` only — it never inserted a row into the new `children` table. Fix has two parts:
+  - `db/index.ts`: startup fixup — after migrations, any family with no `children` rows gets a default child record created using `families.childToken`. Runs once and is idempotent.
+  - `routes/setup.ts`: also inserts a default child row at setup time for new installs.
+- The existing child now appears in the Children management page with name "Child" (editable) and the same kiosk URL as before.
+
 ## Remaining before GitHub release
 
 - [ ] Clear test data from `data/ebbe.db` (not included in git — recreated on first run)
