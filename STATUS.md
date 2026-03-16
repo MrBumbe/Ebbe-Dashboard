@@ -1,6 +1,6 @@
 # Ebbe — Build Status
 
-Last updated: 2026-03-16 (session 6)
+Last updated: 2026-03-16 (session 7)
 
 ---
 
@@ -105,6 +105,12 @@ Last updated: 2026-03-16 (session 6)
 
 Everything through Fix 13 + session 6 fixes is shipped.
 
+**Session 7 fixes (2026-03-16):**
+- Fix 1: Schedule edit form now opens above the calendar grid (not squeezed inside the cell). Editing highlights the item in the grid and shows the full-width form at the top.
+- Fix 2: `isRecurring` boolean added to schedule items (default: true). Form shows "Recurring every week" toggle. When unchecked, a date picker replaces the weekday dropdown.
+- Fix 3: `specificDate` (unix ms) added to `schedule_items` and `events` tables as date backbone. `lib/scheduleDate.ts` shared utility on backend handles effective-day resolution. Child schedule endpoint uses `resolveItemsForWeek` so date-specific items only appear in the correct weekday column for the current week. Annual recurring date picker available in the parent form via "+ Annual date" button.
+- Fix 4: Removed `bg-white/10 rounded-2xl` card frame from the star balance section in the child header — stars now sit directly on the header surface. Weather emoji and star emoji use identical size classes per level for visual balance.
+
 **Session 6 fixes (2026-03-16):**
 - Bug 1: Transaction icons — `⭐` earn, `🎁` reward redemption, `✂️` manual deduction. Parent Rewards page now shows recent transaction history.
 - Bug 2: Settings now load from API on mount (store/history toggles + inactivity timeout persist correctly).
@@ -118,6 +124,21 @@ Everything through Fix 13 + session 6 fixes is shipped.
 
 - [ ] Clear test data from `data/ebbe.db` (not included in git — recreated on first run)
 - [ ] Tag `v0.1.0` release
+
+## Schema additions (session 7)
+
+New columns on `schedule_items`:
+```typescript
+isRecurring:  boolean (default true)   // false = one-time on specificDate
+specificDate: integer | null           // unix ms; one-time date or annual anchor
+```
+
+New column on `events`:
+```typescript
+specificDate: integer | null           // unix ms; annual anchor (e.g. birthday)
+```
+
+New file: `backend/src/lib/scheduleDate.ts` — `getEffectiveDayOfWeek`, `resolveItemsForWeek`
 
 ## Known v2/future items
 
