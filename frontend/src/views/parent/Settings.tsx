@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 import client from '../../api/client';
+import { tw } from '../../lib/theme';
 
 interface GeoResult {
   id: number;
@@ -123,17 +124,17 @@ export default function Settings() {
 
   return (
     <div className="max-w-lg">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('parent.settings.title')}</h1>
+      <h1 className={`${tw.pageHeading} mb-6`}>{t('parent.settings.title')}</h1>
 
       {/* Language */}
-      <section className="bg-white rounded-xl border border-gray-100 p-5 mb-4">
-        <h2 className="text-sm font-semibold text-gray-700 mb-3">{t('parent.settings.language')}</h2>
+      <section className={`${tw.card} p-5 mb-4`}>
+        <h2 className={`${tw.labelMd} mb-3`}>{t('parent.settings.language')}</h2>
         <div className="flex gap-3">
           {(['sv', 'en'] as const).map((l) => (
             <button
               key={l}
               onClick={() => handleLang(l)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${lang === l ? 'bg-blue-700 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${lang === l ? 'bg-blue-700 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
             >
               {l === 'sv' ? '🇸🇪 Svenska' : '🇬🇧 English'}
             </button>
@@ -142,11 +143,11 @@ export default function Settings() {
       </section>
 
       {/* Weather location */}
-      <section className="bg-white rounded-xl border border-gray-100 p-5 mb-4">
-        <h2 className="text-sm font-semibold text-gray-700 mb-1">Weather location</h2>
-        <p className="text-xs text-gray-400 mb-3">Search for a city to set the weather location on the child screen.</p>
+      <section className={`${tw.card} p-5 mb-4`}>
+        <h2 className={`${tw.labelMd} mb-1`}>Weather location</h2>
+        <p className={`${tw.muted} mb-3`}>Search for a city to set the weather location on the child screen.</p>
         {savedLocation && (
-          <p className="text-xs text-green-600 mb-3">✓ Saved: {savedLocation}</p>
+          <p className="text-xs text-green-600 dark:text-green-400 mb-3">✓ Saved: {savedLocation}</p>
         )}
         <div className="flex gap-2 mb-2">
           <input
@@ -155,7 +156,7 @@ export default function Settings() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && void handleSearch()}
             placeholder="e.g. Mullsjö"
-            className="flex-1 border rounded-lg px-3 py-2 text-sm"
+            className={`flex-1 ${tw.input}`}
           />
           <button
             onClick={() => void handleSearch()}
@@ -165,9 +166,9 @@ export default function Settings() {
             {searching ? '...' : 'Search'}
           </button>
         </div>
-        {locationError && <p className="text-xs text-red-500 mb-2">{locationError}</p>}
+        {locationError && <p className="text-xs text-red-500 dark:text-red-400 mb-2">{locationError}</p>}
         {results.length > 0 && (
-          <ul className="border rounded-lg overflow-hidden divide-y divide-gray-100">
+          <ul className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden divide-y divide-gray-100 dark:divide-gray-700">
             {results.map((r) => (
               <li key={r.id}>
                 <button
@@ -176,12 +177,12 @@ export default function Settings() {
                     e.preventDefault(); // prevent blur before click fires
                     void handleSelectLocation(r);
                   }}
-                  className="w-full text-left px-3 py-3 text-sm hover:bg-blue-50 active:bg-blue-100 transition-colors cursor-pointer"
+                  className="w-full text-left px-3 py-3 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 active:bg-blue-100 dark:active:bg-blue-900/30 transition-colors cursor-pointer"
                 >
-                  <span className="font-medium text-gray-800">{r.name}</span>
-                  {r.admin1 && <span className="text-gray-500 ml-1.5">{r.admin1}</span>}
-                  <span className="text-gray-400 ml-1.5">{r.country}</span>
-                  <span className="block text-xs text-gray-400 mt-0.5">{r.latitude.toFixed(2)}°N, {r.longitude.toFixed(2)}°E</span>
+                  <span className={`font-medium ${tw.body}`}>{r.name}</span>
+                  {r.admin1 && <span className={`${tw.secondary} ml-1.5`}>{r.admin1}</span>}
+                  <span className={`${tw.muted} ml-1.5`}>{r.country}</span>
+                  <span className={`block text-xs ${tw.muted} mt-0.5`}>{r.latitude.toFixed(2)}°N, {r.longitude.toFixed(2)}°E</span>
                 </button>
               </li>
             ))}
@@ -190,9 +191,9 @@ export default function Settings() {
       </section>
 
       {/* Child accent colour */}
-      <section className="bg-white rounded-xl border border-gray-100 p-5 mb-4">
-        <h2 className="text-sm font-semibold text-gray-700 mb-1">Child screen colour theme</h2>
-        <p className="text-xs text-gray-400 mb-3">Choose an accent colour for the child's dashboard.</p>
+      <section className={`${tw.card} p-5 mb-4`}>
+        <h2 className={`${tw.labelMd} mb-1`}>Child screen colour theme</h2>
+        <p className={`${tw.muted} mb-3`}>Choose an accent colour for the child's dashboard.</p>
         <div className="flex flex-wrap gap-3">
           {ACCENT_COLOURS.map((c) => (
             <button
@@ -209,16 +210,16 @@ export default function Settings() {
             />
           ))}
         </div>
-        {colorSaved && <p className="text-xs text-green-600 mt-2">✓ Colour saved</p>}
+        {colorSaved && <p className="text-xs text-green-600 dark:text-green-400 mt-2">✓ Colour saved</p>}
       </section>
 
       {/* Child screen features */}
-      <section className="bg-white rounded-xl border border-gray-100 p-5 mb-4">
-        <h2 className="text-sm font-semibold text-gray-700 mb-1">{t('parent.settings.childFeatures')}</h2>
-        <p className="text-xs text-gray-400 mb-4">{t('parent.settings.childFeaturesHint')}</p>
+      <section className={`${tw.card} p-5 mb-4`}>
+        <h2 className={`${tw.labelMd} mb-1`}>{t('parent.settings.childFeatures')}</h2>
+        <p className={`${tw.muted} mb-4`}>{t('parent.settings.childFeaturesHint')}</p>
         <div className="flex flex-col gap-3">
           <label className="flex items-center justify-between gap-4">
-            <span className="text-sm text-gray-700">{t('parent.settings.storeEnabled')}</span>
+            <span className={`text-sm ${tw.body}`}>{t('parent.settings.storeEnabled')}</span>
             <input
               type="checkbox"
               checked={storeEnabled}
@@ -227,7 +228,7 @@ export default function Settings() {
             />
           </label>
           <label className="flex items-center justify-between gap-4">
-            <span className="text-sm text-gray-700">{t('parent.settings.historyEnabled')}</span>
+            <span className={`text-sm ${tw.body}`}>{t('parent.settings.historyEnabled')}</span>
             <input
               type="checkbox"
               checked={historyEnabled}
@@ -236,22 +237,22 @@ export default function Settings() {
             />
           </label>
           <div className="flex items-center justify-between gap-4">
-            <span className="text-sm text-gray-700">{t('parent.settings.inactivitySeconds')}</span>
+            <span className={`text-sm ${tw.body}`}>{t('parent.settings.inactivitySeconds')}</span>
             <input
               type="number"
               min={10}
               max={300}
               value={inactivitySeconds}
               onChange={(e) => setInactivitySeconds(parseInt(e.target.value))}
-              className="w-20 border rounded-lg px-2 py-1.5 text-sm text-center"
+              className={`w-20 text-center ${tw.inputSm}`}
             />
           </div>
         </div>
-        {featuresSaved && <p className="text-xs text-green-600 mt-3">✓ Saved</p>}
+        {featuresSaved && <p className="text-xs text-green-600 dark:text-green-400 mt-3">✓ Saved</p>}
         <div className="flex justify-end mt-3">
           <button
             onClick={() => void handleFeaturesSave()}
-            className="bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-800"
+            className={tw.btnPrimary}
           >
             {t('parent.tasks.save')}
           </button>

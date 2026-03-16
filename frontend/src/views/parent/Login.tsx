@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/useAuthStore';
+import { tw } from '../../lib/theme';
 
 export default function Login() {
   const { t } = useTranslation();
@@ -41,18 +42,18 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-sm">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 w-full max-w-sm">
         <div className="flex items-center gap-3 mb-8">
           <span className="text-3xl">⭐</span>
-          <h1 className="text-2xl font-bold text-gray-800">Ebbe</h1>
+          <h1 className={tw.pageHeading}>Ebbe</h1>
         </div>
 
-        <h2 className="text-lg font-semibold text-gray-700 mb-6">{t('parent.login.title')}</h2>
+        <h2 className={`text-lg font-semibold ${tw.labelMd} mb-6`}>{t('parent.login.title')}</h2>
 
         <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={`block ${tw.labelMd} mb-1`}>
               {t('parent.login.email')}
             </label>
             <input
@@ -60,11 +61,11 @@ export default function Login() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] md:min-h-[40px]"
+              className={`w-full ${tw.input} focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] md:min-h-[40px]`}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={`block ${tw.labelMd} mb-1`}>
               {t('parent.login.password')}
             </label>
             <input
@@ -72,12 +73,12 @@ export default function Login() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] md:min-h-[40px]"
+              className={`w-full ${tw.input} focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] md:min-h-[40px]`}
             />
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
+            <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">{error}</p>
           )}
 
           <button

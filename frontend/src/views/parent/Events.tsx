@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import client from '../../api/client';
 import EmojiPicker from '../../components/EmojiPicker';
+import { tw } from '../../lib/theme';
 
 interface EventItem {
   id: string;
@@ -52,17 +53,17 @@ export default function Events() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">{t('parent.nav.events')}</h1>
+        <h1 className={tw.pageHeading}>{t('parent.nav.events')}</h1>
         <button
           onClick={() => setAdding(true)}
-          className="bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg"
+          className={tw.btnPrimary}
         >
           + Add event
         </button>
       </div>
 
       {adding && (
-        <form onSubmit={(e) => void handleAdd(e)} className="bg-white border border-gray-200 rounded-xl p-4 mb-6 flex flex-col gap-3">
+        <form onSubmit={(e) => void handleAdd(e)} className={`${tw.formCard} mb-6`}>
           <div className="flex gap-3">
             <EmojiPicker value={form.emoji} onChange={(e) => setForm({ ...form, emoji: e })} />
             <input
@@ -70,7 +71,7 @@ export default function Events() {
               placeholder="Event name"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="flex-1 border rounded-lg px-3 py-2 text-sm"
+              className={`flex-1 ${tw.input}`}
             />
           </div>
           <div className="flex gap-3 items-center">
@@ -79,9 +80,9 @@ export default function Events() {
               type="date"
               value={form.eventDate}
               onChange={(e) => setForm({ ...form, eventDate: e.target.value })}
-              className="border rounded-lg px-3 py-2 text-sm"
+              className={tw.input}
             />
-            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+            <label className={`flex items-center gap-2 text-sm ${tw.secondary} cursor-pointer`}>
               <input
                 type="checkbox"
                 checked={form.isVisible}
@@ -92,30 +93,30 @@ export default function Events() {
             </label>
           </div>
           <div className="flex gap-2 justify-end">
-            <button type="button" onClick={() => setAdding(false)} className="text-sm text-gray-500 px-4 py-2 hover:bg-gray-50 rounded-lg">
+            <button type="button" onClick={() => setAdding(false)} className={tw.btnCancel}>
               Cancel
             </button>
-            <button type="submit" className="bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-800">
+            <button type="submit" className={tw.btnPrimary}>
               {t('parent.tasks.save')}
             </button>
           </div>
         </form>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-100 divide-y divide-gray-50">
+      <div className={`${tw.card} ${tw.cardDivide}`}>
         {events.map((ev) => {
           const date = new Date(ev.eventDate);
           const daysLeft = Math.ceil((ev.eventDate - Date.now()) / 86400000);
           return (
-            <div key={ev.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50">
+            <div key={ev.id} className={`flex items-center gap-3 px-4 py-3 ${tw.listRow}`}>
               <span className="text-xl">{ev.emoji}</span>
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-800">{ev.title}</p>
-                <p className="text-xs text-gray-400">{date.toLocaleDateString()} · {daysLeft > 0 ? `in ${daysLeft} days` : 'today!'}</p>
+                <p className={`text-sm font-medium ${tw.body}`}>{ev.title}</p>
+                <p className={tw.muted}>{date.toLocaleDateString()} · {daysLeft > 0 ? `in ${daysLeft} days` : 'today!'}</p>
               </div>
               <button
                 onClick={() => void handleToggleVisible(ev)}
-                className={`text-xs px-2 py-1 rounded-md ${ev.isVisible ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}
+                className={ev.isVisible ? tw.badgeGreen : tw.badgeGray}
               >
                 {ev.isVisible ? 'Visible' : 'Hidden'}
               </button>
@@ -126,7 +127,7 @@ export default function Events() {
           );
         })}
         {events.length === 0 && (
-          <p className="text-sm text-gray-400 text-center py-6">No upcoming events.</p>
+          <p className={`${tw.muted} text-sm text-center py-6`}>No upcoming events.</p>
         )}
       </div>
     </div>

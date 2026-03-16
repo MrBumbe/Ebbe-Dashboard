@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import client from '../../api/client';
+import { tw } from '../../lib/theme';
 
 interface Stats {
   balance: number;
@@ -32,13 +33,13 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('parent.nav.dashboard')}</h1>
+      <h1 className={`${tw.pageHeading} mb-6`}>{t('parent.nav.dashboard')}</h1>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((c) => (
-          <div key={c.label} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <div key={c.label} className={`${tw.card} shadow-sm p-5`}>
             <div className="text-3xl mb-2">{c.emoji}</div>
-            <div className="text-2xl font-bold text-gray-800">{c.value}</div>
-            <div className="text-sm text-gray-500 mt-1">{c.label}</div>
+            <div className={`text-2xl font-bold ${tw.body}`}>{c.value}</div>
+            <div className={`${tw.secondary} mt-1`}>{c.label}</div>
           </div>
         ))}
       </div>

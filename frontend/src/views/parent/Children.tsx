@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import client from '../../api/client';
 import EmojiPicker from '../../components/EmojiPicker';
+import { tw } from '../../lib/theme';
 
 interface Child {
   id: string;
@@ -37,6 +38,63 @@ const DEFAULT_FORM: FormState = {
   color: '#1565C0',
   birthdate: '',
 };
+
+// ── ChildForm at module level — prevents focus loss on keystroke ───────────
+// Defining the form component inside Children() would create a new component
+// type on every render, unmounting and remounting the input on each keystroke.
+
+interface ChildFormProps {
+  form: FormState;
+  onChange: (f: FormState) => void;
+  onSubmit: (e: React.FormEvent) => Promise<void>;
+  submitLabel: string;
+  onCancel: () => void;
+}
+
+function ChildForm({ form, onChange, onSubmit, submitLabel, onCancel }: ChildFormProps) {
+  const { t } = useTranslation();
+  return (
+    <form onSubmit={(e) => void onSubmit(e)} className={`${tw.formCard} mb-4`}>
+      <div className="flex gap-3">
+        <EmojiPicker value={form.emoji} onChange={(e) => onChange({ ...form, emoji: e })} />
+        <input
+          required
+          placeholder={t('parent.children.namePlaceholder')}
+          value={form.name}
+          onChange={(e) => onChange({ ...form, name: e.target.value })}
+          className={`flex-1 ${tw.input}`}
+        />
+      </div>
+      <div className="flex gap-2 flex-wrap">
+        {PRESET_COLORS.map((c) => (
+          <button
+            key={c.value}
+            type="button"
+            onClick={() => onChange({ ...form, color: c.value })}
+            className={`w-8 h-8 rounded-full border-2 transition-transform ${form.color === c.value ? 'border-gray-800 dark:border-white scale-110' : 'border-transparent'}`}
+            style={{ backgroundColor: c.value }}
+            title={c.label}
+          />
+        ))}
+      </div>
+      <div>
+        <label className={`${tw.labelSm} mb-1 block`}>{t('parent.children.birthdate')}</label>
+        <input
+          type="date"
+          value={form.birthdate}
+          onChange={(e) => onChange({ ...form, birthdate: e.target.value })}
+          className={tw.inputSm}
+        />
+      </div>
+      <div className="flex gap-2 justify-end">
+        <button type="button" onClick={onCancel} className={tw.btnCancel}>Cancel</button>
+        <button type="submit" className={tw.btnPrimary}>{submitLabel}</button>
+      </div>
+    </form>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function Children() {
   const { t } = useTranslation();
@@ -109,73 +167,45 @@ export default function Children() {
     setTimeout(() => setCopiedId(null), 2000);
   }
 
-  function ChildForm({ onSubmit, submitLabel }: { onSubmit: (e: React.FormEvent) => Promise<void>; submitLabel: string }) {
-    return (
-      <form onSubmit={(e) => void onSubmit(e)} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-4 flex flex-col gap-3">
-        <div className="flex gap-3">
-          <EmojiPicker value={form.emoji} onChange={(e) => setForm({ ...form, emoji: e })} />
-          <input
-            required
-            placeholder={t('parent.children.namePlaceholder')}
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="flex-1 border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-          />
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          {PRESET_COLORS.map((c) => (
-            <button
-              key={c.value}
-              type="button"
-              onClick={() => setForm({ ...form, color: c.value })}
-              className={`w-8 h-8 rounded-full border-2 transition-transform ${form.color === c.value ? 'border-gray-800 dark:border-white scale-110' : 'border-transparent'}`}
-              style={{ backgroundColor: c.value }}
-              title={c.label}
-            />
-          ))}
-        </div>
-        <div>
-          <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t('parent.children.birthdate')}</label>
-          <input
-            type="date"
-            value={form.birthdate}
-            onChange={(e) => setForm({ ...form, birthdate: e.target.value })}
-            className="border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-          />
-        </div>
-        <div className="flex gap-2 justify-end">
-          <button type="button" onClick={cancelForm} className="text-sm text-gray-500 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg">Cancel</button>
-          <button type="submit" className="bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-800">{submitLabel}</button>
-        </div>
-      </form>
-    );
-  }
-
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{t('parent.children.title')}</h1>
+        <h1 className={tw.pageHeading}>{t('parent.children.title')}</h1>
         {!adding && !editId && (
           <button
             onClick={() => { setAdding(true); setForm(DEFAULT_FORM); }}
-            className="bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg"
+            className={tw.btnPrimary}
           >
             + {t('parent.children.add')}
           </button>
         )}
       </div>
 
-      {adding && <ChildForm onSubmit={handleAdd} submitLabel={t('parent.tasks.save')} />}
+      {adding && (
+        <ChildForm
+          form={form}
+          onChange={setForm}
+          onSubmit={handleAdd}
+          submitLabel={t('parent.tasks.save')}
+          onCancel={cancelForm}
+        />
+      )}
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 divide-y divide-gray-50 dark:divide-gray-700">
+      <div className={`${tw.card} ${tw.cardDivide}`}>
         {childList.length === 0 && (
-          <div className="px-4 py-8 text-center text-gray-400 dark:text-gray-500 text-sm">{t('parent.children.empty')}</div>
+          <div className={`px-4 py-8 text-center ${tw.muted}`}>{t('parent.children.empty')}</div>
         )}
         {childList.map((child) => (
           <div key={child.id}>
             {editId === child.id ? (
               <div className="p-3">
-                <ChildForm onSubmit={handleEdit} submitLabel={t('parent.tasks.save')} />
+                <ChildForm
+                  form={form}
+                  onChange={setForm}
+                  onSubmit={handleEdit}
+                  submitLabel={t('parent.tasks.save')}
+                  onCancel={cancelForm}
+                />
               </div>
             ) : (
               <div className="px-4 py-3 flex flex-col gap-2">
@@ -183,14 +213,14 @@ export default function Children() {
                   <span className="text-2xl">{child.emoji}</span>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-800 dark:text-gray-100">{child.name}</span>
+                      <span className={`font-medium ${tw.body}`}>{child.name}</span>
                       <span
                         className="w-3 h-3 rounded-full inline-block border border-gray-200 dark:border-gray-600"
                         style={{ backgroundColor: child.color }}
                       />
                     </div>
                     {child.birthdate && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                      <p className={`${tw.muted} mt-0.5`}>
                         {t('parent.children.born')}: {new Date(child.birthdate).toLocaleDateString()}
                       </p>
                     )}
@@ -205,7 +235,7 @@ export default function Children() {
 
                 {/* Kiosk URL */}
                 <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
-                  <code className="flex-1 text-xs text-gray-600 dark:text-gray-300 truncate">
+                  <code className={`flex-1 text-xs truncate ${tw.secondary}`}>
                     {window.location.origin}/child?token={child.childToken}
                   </code>
                   <button
@@ -221,7 +251,7 @@ export default function Children() {
         ))}
       </div>
 
-      <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">{t('parent.children.tokenHint')}</p>
+      <p className={`${tw.muted} mt-4`}>{t('parent.children.tokenHint')}</p>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import client from '../../api/client';
 import EmojiPicker from '../../components/EmojiPicker';
+import { tw } from '../../lib/theme';
 
 interface ScheduleItem {
   id: string;
@@ -83,7 +84,7 @@ function ItemForm({ form, onChange, onSubmit, submitLabel, onCancel }: ItemFormP
   const { t } = useTranslation();
 
   return (
-    <form onSubmit={(e) => void onSubmit(e)} className="bg-white border border-gray-200 rounded-xl p-4 mb-6 flex flex-col gap-3">
+    <form onSubmit={(e) => void onSubmit(e)} className={`${tw.formCard} mb-6`}>
       <div className="flex gap-3">
         <EmojiPicker value={form.emoji} onChange={(e) => onChange({ ...form, emoji: e })} />
         <input
@@ -91,7 +92,7 @@ function ItemForm({ form, onChange, onSubmit, submitLabel, onCancel }: ItemFormP
           placeholder={t('parent.schedule.titlePlaceholder')}
           value={form.title}
           onChange={(e) => onChange({ ...form, title: e.target.value })}
-          className="flex-1 border rounded-lg px-3 py-2 text-sm"
+          className={`flex-1 ${tw.input}`}
         />
       </div>
 
@@ -103,7 +104,7 @@ function ItemForm({ form, onChange, onSubmit, submitLabel, onCancel }: ItemFormP
           onChange={(e) => onChange({ ...form, isRecurring: e.target.checked, specificDate: '' })}
           className="w-4 h-4 rounded"
         />
-        <span className="text-sm text-gray-700">{t('parent.schedule.recurring')}</span>
+        <span className={`text-sm ${tw.labelMd}`}>{t('parent.schedule.recurring')}</span>
       </label>
 
       <div className="flex gap-3 flex-wrap">
@@ -112,14 +113,14 @@ function ItemForm({ form, onChange, onSubmit, submitLabel, onCancel }: ItemFormP
           <select
             value={form.dayOfWeek}
             onChange={(e) => onChange({ ...form, dayOfWeek: parseInt(e.target.value) })}
-            className="border rounded-lg px-3 py-2 text-sm"
+            className={tw.select}
           >
             {DAYS.map((d) => <option key={d} value={d}>{t(`child.schedule.days.${d}`)}</option>)}
           </select>
         ) : (
           /* Date-specific: show date picker */
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-gray-500">
+            <label className={tw.labelSm}>
               {form.isRecurring ? t('parent.schedule.annualDate') : t('parent.schedule.specificDate')}
             </label>
             <input
@@ -127,13 +128,13 @@ function ItemForm({ form, onChange, onSubmit, submitLabel, onCancel }: ItemFormP
               required={!form.isRecurring}
               value={form.specificDate}
               onChange={(e) => onChange({ ...form, specificDate: e.target.value })}
-              className="border rounded-lg px-3 py-2 text-sm"
+              className={tw.input}
             />
             {form.isRecurring && (
               <button
                 type="button"
                 onClick={() => onChange({ ...form, specificDate: '' })}
-                className="text-xs text-blue-600 hover:underline text-left"
+                className="text-xs text-blue-600 dark:text-blue-400 hover:underline text-left"
               >
                 {t('parent.schedule.clearDate')}
               </button>
@@ -146,7 +147,7 @@ function ItemForm({ form, onChange, onSubmit, submitLabel, onCancel }: ItemFormP
           <button
             type="button"
             onClick={() => onChange({ ...form, specificDate: new Date().toISOString().slice(0, 10) })}
-            className="text-xs text-gray-400 hover:text-gray-600 border border-dashed border-gray-300 rounded-lg px-3 py-2"
+            className={`text-xs ${tw.muted} hover:text-gray-600 dark:hover:text-gray-300 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2`}
           >
             + {t('parent.schedule.annualDate')}
           </button>
@@ -156,21 +157,21 @@ function ItemForm({ form, onChange, onSubmit, submitLabel, onCancel }: ItemFormP
           type="time"
           value={form.timeStart}
           onChange={(e) => onChange({ ...form, timeStart: e.target.value })}
-          className="border rounded-lg px-3 py-2 text-sm"
+          className={tw.input}
         />
         <input
           type="color"
           value={form.color}
           onChange={(e) => onChange({ ...form, color: e.target.value })}
-          className="w-10 h-9 border rounded-lg cursor-pointer"
+          className="w-10 h-9 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer"
         />
       </div>
 
       <div className="flex gap-2 justify-end">
-        <button type="button" onClick={onCancel} className="text-sm text-gray-500 px-4 py-2 hover:bg-gray-50 rounded-lg">
+        <button type="button" onClick={onCancel} className={tw.btnCancel}>
           Cancel
         </button>
-        <button type="submit" className="bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-800">
+        <button type="submit" className={tw.btnPrimary}>
           {submitLabel}
         </button>
       </div>
@@ -268,11 +269,11 @@ export default function Schedule() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">{t('parent.nav.schedule')}</h1>
+        <h1 className={tw.pageHeading}>{t('parent.nav.schedule')}</h1>
         {!adding && !editId && (
           <button
             onClick={startAdd}
-            className="bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg"
+            className={tw.btnPrimary}
           >
             + {t('parent.schedule.addItem')}
           </button>
@@ -293,7 +294,7 @@ export default function Schedule() {
       {/* Edit form — shown above the grid, outside the cell */}
       {editId && (
         <div className="mb-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+          <p className={`${tw.sectionHeading} mb-2`}>
             {t('parent.schedule.editItem')}: {editingItem?.emoji} {editingItem?.title}
           </p>
           <ItemForm
@@ -308,9 +309,9 @@ export default function Schedule() {
 
       <div className="grid grid-cols-1 lg:grid-cols-7 gap-3">
         {DAYS.map((day) => (
-          <div key={day} className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-            <div className="px-3 py-2 bg-gray-50 border-b border-gray-100">
-              <p className="text-xs font-semibold text-gray-600 uppercase">{t(`child.schedule.days.${day}`)}</p>
+          <div key={day} className={`${tw.card} overflow-hidden`}>
+            <div className={`px-3 py-2 ${tw.cardHeaderBg} ${tw.cardHeaderBorder}`}>
+              <p className={`text-xs font-semibold ${tw.secondary} uppercase`}>{t(`child.schedule.days.${day}`)}</p>
             </div>
             <div className="p-2 flex flex-col gap-1 min-h-[80px]">
               {(byDay[day] ?? []).map((item) => (
@@ -322,9 +323,9 @@ export default function Schedule() {
                 >
                   <div className="flex items-center justify-between gap-1">
                     <span>{item.emoji}</span>
-                    <span className="font-semibold text-gray-700">{item.timeStart}</span>
+                    <span className="font-semibold text-gray-700 dark:text-gray-200">{item.timeStart}</span>
                     {!item.isRecurring && (
-                      <span title={item.specificDate ? new Date(item.specificDate).toLocaleDateString() : ''} className="text-[9px] text-gray-400 leading-none">📅</span>
+                      <span title={item.specificDate ? new Date(item.specificDate).toLocaleDateString() : ''} className={`text-[9px] ${tw.muted} leading-none`}>📅</span>
                     )}
                     <button
                       onClick={(e) => { e.stopPropagation(); void handleDelete(item.id); }}
@@ -333,7 +334,7 @@ export default function Schedule() {
                       ×
                     </button>
                   </div>
-                  <div className="text-gray-700 mt-0.5 leading-tight">{item.title}</div>
+                  <div className="text-gray-700 dark:text-gray-200 mt-0.5 leading-tight">{item.title}</div>
                 </div>
               ))}
             </div>

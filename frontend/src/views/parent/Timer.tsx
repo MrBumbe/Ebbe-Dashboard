@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/useAuthStore';
 import { connectParentWs } from '../../api/websocket';
 import EmojiPicker from '../../components/EmojiPicker';
+import { tw } from '../../lib/theme';
 
 const PRESETS = [2, 5, 10, 15, 30];
 
@@ -86,16 +87,16 @@ export default function Timer() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-2">{t('parent.timer.title')}</h1>
-      <p className="text-sm text-gray-500 mb-6">
+      <h1 className={`${tw.pageHeading} mb-2`}>{t('parent.timer.title')}</h1>
+      <p className={`${tw.secondary} mb-6`}>
         {connected ? '🟢 Connected to screen' : '🔴 Not connected'}
       </p>
 
-      <div className="bg-white rounded-xl border border-gray-100 p-6 max-w-md flex flex-col gap-5">
+      <div className={`${tw.card} p-6 max-w-md flex flex-col gap-5`}>
 
         {/* Label with emoji picker */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">{t('parent.timer.label')}</label>
+          <label className={`block ${tw.labelMd} mb-1`}>{t('parent.timer.label')}</label>
           <div className="flex gap-2">
             <EmojiPicker value={labelEmoji} onChange={setLabelEmoji} />
             <input
@@ -103,23 +104,23 @@ export default function Timer() {
               value={labelText}
               onChange={(e) => setLabelText(e.target.value)}
               placeholder="Dinner, Bedtime…"
-              className="flex-1 border rounded-lg px-3 py-2 text-sm"
+              className={`flex-1 ${tw.input}`}
             />
           </div>
           {fullLabel && (
-            <p className="text-xs text-gray-400 mt-1">Preview: <span className="font-medium text-gray-600">{fullLabel}</span></p>
+            <p className={`${tw.muted} mt-1`}>Preview: <span className={`font-medium ${tw.secondary}`}>{fullLabel}</span></p>
           )}
         </div>
 
         {/* Duration — presets */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">{t('parent.timer.minutes')}</label>
+          <label className={`block ${tw.labelMd} mb-2`}>{t('parent.timer.minutes')}</label>
           <div className="flex flex-wrap gap-2 mb-3">
             {PRESETS.map((m) => (
               <button
                 key={m}
                 onClick={() => handlePreset(m)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${selectedPreset === m ? 'bg-blue-700 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${selectedPreset === m ? 'bg-blue-700 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
               >
                 {m} min
               </button>
@@ -135,9 +136,9 @@ export default function Timer() {
               value={customInput}
               onChange={(e) => handleCustomInput(e.target.value)}
               placeholder="Custom mins"
-              className="w-32 border rounded-lg px-3 py-2 text-sm"
+              className={`w-32 ${tw.input}`}
             />
-            <span className="text-sm text-gray-400">minutes</span>
+            <span className={tw.muted}>minutes</span>
           </div>
 
           {/* Set by clock time */}
@@ -146,9 +147,9 @@ export default function Timer() {
               type="time"
               value={clockTarget}
               onChange={(e) => handleClockTarget(e.target.value)}
-              className="border rounded-lg px-3 py-2 text-sm"
+              className={tw.input}
             />
-            <span className="text-sm text-gray-400">
+            <span className={tw.muted}>
               {clockTarget && typeof minutes === 'number'
                 ? `→ ${minutes} min from now`
                 : 'set end time'}
@@ -158,7 +159,7 @@ export default function Timer() {
 
         {/* Duration summary */}
         {typeof minutes === 'number' && minutes > 0 && (
-          <p className="text-sm text-blue-700 font-medium -mt-2">
+          <p className="text-sm text-blue-700 dark:text-blue-400 font-medium -mt-2">
             Timer: {minutes} {minutes === 1 ? 'minute' : 'minutes'}
           </p>
         )}
@@ -175,7 +176,7 @@ export default function Timer() {
           {active && (
             <button
               onClick={handleCancel}
-              className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg transition-colors"
+              className="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold py-2.5 rounded-lg transition-colors"
             >
               {t('parent.timer.cancel')}
             </button>

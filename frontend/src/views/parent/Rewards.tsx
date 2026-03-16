@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import client from '../../api/client';
 import EmojiPicker from '../../components/EmojiPicker';
+import { tw } from '../../lib/theme';
 
 interface Reward {
   id: string;
@@ -107,39 +108,39 @@ export default function Rewards() {
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-bold text-gray-800">{t('parent.rewards.title')}</h1>
+        <h1 className={tw.pageHeading}>{t('parent.rewards.title')}</h1>
         <button
           onClick={() => setAdding(true)}
-          className="bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          className={tw.btnPrimary}
         >
           + {t('parent.rewards.add')}
         </button>
       </div>
-      <p className="text-sm text-gray-500 mb-6">{t('parent.rewards.balance', { count: balance })}</p>
+      <p className={`${tw.secondary} mb-6`}>{t('parent.rewards.balance', { count: balance })}</p>
 
       {/* Pending requests */}
       {requests.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
+          <h2 className={`${tw.sectionHeading} mb-2`}>
             {t('parent.rewards.pendingRequests')}
           </h2>
-          <div className="bg-white rounded-xl border border-amber-200 divide-y divide-gray-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-amber-200 dark:border-amber-700 divide-y divide-gray-50 dark:divide-gray-700">
             {requests.map((req) => (
               <div key={req.id} className="flex items-center gap-3 px-4 py-3">
                 <span className="text-xl">{req.reward?.emoji ?? '🎁'}</span>
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium text-gray-800">{req.reward?.title ?? '—'}</span>
-                  <p className="text-xs text-gray-400">{req.reward ? `${req.reward.starCost} ⭐` : ''}</p>
+                  <span className={`text-sm font-medium ${tw.body}`}>{req.reward?.title ?? '—'}</span>
+                  <p className={tw.muted}>{req.reward ? `${req.reward.starCost} ⭐` : ''}</p>
                 </div>
                 <button
                   onClick={() => void handleRequest(req.id, 'approve')}
-                  className="text-xs bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1.5 rounded-md font-medium"
+                  className="text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/60 px-3 py-1.5 rounded-md font-medium"
                 >
                   ✓ {t('parent.rewards.approve')}
                 </button>
                 <button
                   onClick={() => void handleRequest(req.id, 'deny')}
-                  className="text-xs bg-red-100 text-red-600 hover:bg-red-200 px-3 py-1.5 rounded-md font-medium"
+                  className="text-xs bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60 px-3 py-1.5 rounded-md font-medium"
                 >
                   ✕ {t('parent.rewards.deny')}
                 </button>
@@ -151,7 +152,7 @@ export default function Rewards() {
 
       {/* Add reward form */}
       {adding && (
-        <form onSubmit={(e) => void handleAdd(e)} className="bg-white border border-gray-200 rounded-xl p-4 mb-6 flex flex-col gap-3">
+        <form onSubmit={(e) => void handleAdd(e)} className={`${tw.formCard} mb-6`}>
           <div className="flex gap-3">
             <EmojiPicker value={form.emoji} onChange={(e) => setForm({ ...form, emoji: e })} />
             <input
@@ -159,25 +160,25 @@ export default function Rewards() {
               placeholder={t('parent.rewards.title')}
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="flex-1 border rounded-lg px-3 py-2 text-sm"
+              className={`flex-1 ${tw.input}`}
             />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">{t('parent.rewards.starCost')}</span>
+            <span className={`text-sm ${tw.secondary}`}>{t('parent.rewards.starCost')}</span>
             <input
               type="number"
               min={1}
               value={form.starCost}
               onChange={(e) => setForm({ ...form, starCost: parseInt(e.target.value) })}
-              className="w-20 border rounded-lg px-2 py-2 text-sm"
+              className={`w-20 ${tw.inputSm}`}
             />
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
           <div className="flex gap-2 justify-end">
-            <button type="button" onClick={() => setAdding(false)} className="text-sm text-gray-500 px-4 py-2 hover:bg-gray-50 rounded-lg">
+            <button type="button" onClick={() => setAdding(false)} className={tw.btnCancel}>
               Cancel
             </button>
-            <button type="submit" className="bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-800">
+            <button type="submit" className={tw.btnPrimary}>
               {t('parent.tasks.save')}
             </button>
           </div>
@@ -185,17 +186,17 @@ export default function Rewards() {
       )}
 
       {/* Reward list */}
-      <div className="bg-white rounded-xl border border-gray-100 divide-y divide-gray-50 mb-6">
+      <div className={`${tw.card} ${tw.cardDivide} mb-6`}>
         {rewards.map((r) => (
-          <div key={r.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50">
+          <div key={r.id} className={`flex items-center gap-3 px-4 py-3 ${tw.listRow}`}>
             <span className="text-xl">{r.emoji}</span>
-            <span className={`flex-1 text-sm font-medium ${r.isActive ? 'text-gray-800' : 'text-gray-400 line-through'}`}>
+            <span className={`flex-1 text-sm font-medium ${r.isActive ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400 line-through'}`}>
               {r.title}
             </span>
-            <span className="text-sm font-semibold text-amber-600">{r.starCost} ⭐</span>
+            <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">{r.starCost} ⭐</span>
             <button
               onClick={() => void handleToggle(r)}
-              className={`text-xs px-2 py-1 rounded-md ${r.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}
+              className={r.isActive ? tw.badgeGreen : tw.badgeGray}
             >
               {r.isActive ? 'Active' : 'Inactive'}
             </button>
@@ -205,40 +206,40 @@ export default function Rewards() {
           </div>
         ))}
         {rewards.length === 0 && (
-          <p className="text-sm text-gray-400 text-center py-6">No rewards yet.</p>
+          <p className={`${tw.muted} text-sm text-center py-6`}>No rewards yet.</p>
         )}
       </div>
 
       {/* Manual star adjustment */}
       <div>
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
+        <h2 className={`${tw.sectionHeading} mb-2`}>
           {t('parent.rewards.manualAdjust')}
         </h2>
-        <form onSubmit={(e) => void handleAdjust(e)} className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col gap-3">
+        <form onSubmit={(e) => void handleAdjust(e)} className={`${tw.card} p-4 flex flex-col gap-3`}>
           <div className="flex gap-3 flex-wrap">
             <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-600">{t('parent.rewards.adjustAmount')}</label>
+              <label className={`text-sm ${tw.secondary}`}>{t('parent.rewards.adjustAmount')}</label>
               <input
                 type="number"
                 placeholder="+5 or -3"
                 value={adjustAmount}
                 onChange={(e) => setAdjustAmount(e.target.value)}
-                className="w-24 border rounded-lg px-2 py-2 text-sm"
+                className={`w-24 ${tw.inputSm}`}
               />
             </div>
             <input
               placeholder={t('parent.rewards.adjustDescription')}
               value={adjustDesc}
               onChange={(e) => setAdjustDesc(e.target.value)}
-              className="flex-1 min-w-[180px] border rounded-lg px-3 py-2 text-sm"
+              className={`flex-1 min-w-[180px] ${tw.input}`}
             />
           </div>
-          {adjustError && <p className="text-sm text-red-600">{adjustError}</p>}
+          {adjustError && <p className="text-sm text-red-600 dark:text-red-400">{adjustError}</p>}
           <div className="flex justify-end">
             <button
               type="submit"
               disabled={adjusting}
-              className="bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-800 disabled:opacity-50"
+              className={`${tw.btnPrimary} disabled:opacity-50`}
             >
               {t('parent.rewards.adjustSubmit')}
             </button>
@@ -248,8 +249,8 @@ export default function Rewards() {
 
       {transactions.length > 0 && (
         <div className="mt-6">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Recent transactions</h2>
-          <div className="bg-white rounded-xl border border-gray-100 divide-y divide-gray-50">
+          <h2 className={`${tw.sectionHeading} mb-2`}>Recent transactions</h2>
+          <div className={`${tw.card} ${tw.cardDivide}`}>
             {transactions.map((tx) => {
               const isEarn = tx.type === 'earn';
               const icon = isEarn ? '⭐' : tx.description.startsWith('Redeemed:') ? '🎁' : '✂️';
@@ -257,9 +258,9 @@ export default function Rewards() {
               return (
                 <div key={tx.id} className="flex items-center gap-3 px-4 py-3">
                   <span className="text-lg">{icon}</span>
-                  <span className="flex-1 text-sm text-gray-700 truncate">{tx.description}</span>
-                  <span className="text-xs text-gray-400">{dateStr}</span>
-                  <span className={`text-sm font-semibold ${isEarn ? 'text-green-600' : 'text-red-500'}`}>
+                  <span className={`flex-1 text-sm ${tw.body} truncate`}>{tx.description}</span>
+                  <span className={tw.muted}>{dateStr}</span>
+                  <span className={`text-sm font-semibold ${isEarn ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
                     {isEarn ? '+' : '-'}{tx.amount} ⭐
                   </span>
                 </div>

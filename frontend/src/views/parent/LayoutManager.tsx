@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import client from '../../api/client';
+import { tw } from '../../lib/theme';
 
 interface LayoutEntry {
   pageNumber: number;
@@ -90,25 +91,25 @@ export default function LayoutManager() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">{t('parent.layout.title')}</h1>
+        <h1 className={tw.pageHeading}>{t('parent.layout.title')}</h1>
         <button
           onClick={() => void handleSave()}
           disabled={saving}
-          className="bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+          className={`${tw.btnPrimary} disabled:opacity-50`}
         >
           {saved ? '✓ Saved' : saving ? '...' : t('parent.tasks.save')}
         </button>
       </div>
 
-      <p className="text-sm text-gray-500 mb-2">{t('parent.layout.hint')}</p>
-      <p className="text-sm text-gray-400 mb-6">Clock, weather, and star balance are always shown in the page header.</p>
+      <p className={`${tw.secondary} mb-2`}>{t('parent.layout.hint')}</p>
+      <p className={`${tw.muted} mb-6`}>Clock, weather, and star balance are always shown in the page header.</p>
 
       {pageList.map(page => (
         <div key={page} className="mb-6">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
+          <h2 className={`${tw.sectionHeading} mb-2`}>
             {t('parent.layout.page', { number: page })}
           </h2>
-          <div className="bg-white rounded-xl border border-gray-100 divide-y divide-gray-50">
+          <div className={`${tw.card} ${tw.cardDivide}`}>
             {entriesForPage(page).map((entry, idx, arr) => (
               <div key={entry.widgetId} className="flex items-center gap-3 px-4 py-3">
                 {/* Enabled toggle */}
@@ -120,7 +121,7 @@ export default function LayoutManager() {
                 />
 
                 {/* Label */}
-                <span className={`flex-1 text-sm font-medium ${entry.isEnabled ? 'text-gray-800' : 'text-gray-400'}`}>
+                <span className={`flex-1 text-sm font-medium ${entry.isEnabled ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'}`}>
                   {WIDGET_LABELS[entry.widgetId] ?? entry.widgetId}
                 </span>
 
@@ -128,7 +129,7 @@ export default function LayoutManager() {
                 <select
                   value={entry.pageNumber}
                   onChange={(e) => setPage(entry.widgetId, parseInt(e.target.value))}
-                  className="border rounded px-2 py-1 text-xs text-gray-600"
+                  className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-xs bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300"
                 >
                   {Array.from({ length: maxPage + 1 }, (_, i) => i + 1).map(p => (
                     <option key={p} value={p}>{t('parent.layout.page', { number: p })}</option>
@@ -140,14 +141,14 @@ export default function LayoutManager() {
                   <button
                     onClick={() => moveWidget(entry.widgetId, 'up')}
                     disabled={idx === 0}
-                    className="text-gray-400 hover:text-gray-600 disabled:opacity-20 text-xs leading-none px-1"
+                    className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-20 text-xs leading-none px-1"
                   >
                     ▲
                   </button>
                   <button
                     onClick={() => moveWidget(entry.widgetId, 'down')}
                     disabled={idx === arr.length - 1}
-                    className="text-gray-400 hover:text-gray-600 disabled:opacity-20 text-xs leading-none px-1"
+                    className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-20 text-xs leading-none px-1"
                   >
                     ▼
                   </button>

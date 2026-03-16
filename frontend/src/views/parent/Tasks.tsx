@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import client from '../../api/client';
 import EmojiPicker from '../../components/EmojiPicker';
+import { tw } from '../../lib/theme';
 
 interface Task {
   id: string;
@@ -64,7 +65,7 @@ function TaskForm({ form, onChange, onSubmit, submitLabel, error, onCancel }: Ta
   }
 
   return (
-    <form onSubmit={(e) => void onSubmit(e)} className="bg-white border border-gray-200 rounded-xl p-4 mb-4 flex flex-col gap-3">
+    <form onSubmit={(e) => void onSubmit(e)} className={`${tw.formCard} mb-4`}>
       {/* Title + emoji */}
       <div className="flex gap-3">
         <EmojiPicker value={form.emoji} onChange={(e) => onChange({ ...form, emoji: e })} />
@@ -73,7 +74,7 @@ function TaskForm({ form, onChange, onSubmit, submitLabel, error, onCancel }: Ta
           placeholder={t('parent.tasks.titlePlaceholder')}
           value={form.title}
           onChange={(e) => onChange({ ...form, title: e.target.value })}
-          className="flex-1 border rounded-lg px-3 py-2 text-sm"
+          className={`flex-1 ${tw.input}`}
         />
       </div>
 
@@ -82,7 +83,7 @@ function TaskForm({ form, onChange, onSubmit, submitLabel, error, onCancel }: Ta
         <select
           value={form.routine}
           onChange={(e) => onChange({ ...form, routine: e.target.value as Task['routine'] })}
-          className="flex-1 min-w-[140px] border rounded-lg px-3 py-2 text-sm"
+          className={`flex-1 min-w-[140px] ${tw.select}`}
         >
           <option value="morning">{t('parent.tasks.morning')}</option>
           <option value="evening">{t('parent.tasks.evening')}</option>
@@ -93,21 +94,21 @@ function TaskForm({ form, onChange, onSubmit, submitLabel, error, onCancel }: Ta
             placeholder={t('parent.tasks.routineNamePlaceholder')}
             value={form.routineName}
             onChange={(e) => onChange({ ...form, routineName: e.target.value })}
-            className="flex-1 min-w-[140px] border rounded-lg px-3 py-2 text-sm"
+            className={`flex-1 min-w-[140px] ${tw.input}`}
           />
         )}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">{t('parent.tasks.starValue')}</span>
+          <span className={`text-sm ${tw.secondary}`}>{t('parent.tasks.starValue')}</span>
           <input
             type="number" min={1} max={10} value={form.starValue}
             onChange={(e) => onChange({ ...form, starValue: parseInt(e.target.value) })}
-            className="w-16 border rounded-lg px-2 py-2 text-sm text-center"
+            className={`w-16 text-center ${tw.inputSm}`}
           />
         </div>
       </div>
 
       {/* Visible to child */}
-      <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+      <label className={`flex items-center gap-2 text-sm ${tw.labelMd} cursor-pointer`}>
         <input
           type="checkbox" checked={form.isVisibleToChild}
           onChange={(e) => onChange({ ...form, isVisibleToChild: e.target.checked })}
@@ -118,14 +119,14 @@ function TaskForm({ form, onChange, onSubmit, submitLabel, error, onCancel }: Ta
 
       {/* Days of week */}
       <div>
-        <p className="text-xs font-medium text-gray-600 mb-1.5">{t('parent.tasks.activeDays')}</p>
+        <p className={`${tw.labelSm} font-medium mb-1.5`}>{t('parent.tasks.activeDays')}</p>
         <div className="flex gap-1.5 flex-wrap">
           {DAY_LABELS.map((label, i) => (
             <button
               key={i}
               type="button"
               onClick={() => toggleDay(i)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${form.daysOfWeek.includes(i) ? 'bg-blue-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${form.daysOfWeek.includes(i) ? 'bg-blue-700 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
             >
               {label}
             </button>
@@ -136,29 +137,29 @@ function TaskForm({ form, onChange, onSubmit, submitLabel, error, onCancel }: Ta
       {/* Time window */}
       <div className="flex gap-3 items-center flex-wrap">
         <div className="flex items-center gap-2">
-          <label className="text-xs text-gray-600">{t('parent.tasks.timeFrom')}</label>
-          <input type="time" value={form.timeStart} onChange={(e) => onChange({ ...form, timeStart: e.target.value })} className="border rounded-lg px-2 py-1.5 text-sm" />
+          <label className={tw.labelSm}>{t('parent.tasks.timeFrom')}</label>
+          <input type="time" value={form.timeStart} onChange={(e) => onChange({ ...form, timeStart: e.target.value })} className={tw.inputSm} />
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-xs text-gray-600">{t('parent.tasks.timeTo')}</label>
-          <input type="time" value={form.timeEnd} onChange={(e) => onChange({ ...form, timeEnd: e.target.value })} className="border rounded-lg px-2 py-1.5 text-sm" />
+          <label className={tw.labelSm}>{t('parent.tasks.timeTo')}</label>
+          <input type="time" value={form.timeEnd} onChange={(e) => onChange({ ...form, timeEnd: e.target.value })} className={tw.inputSm} />
         </div>
         {(form.timeStart || form.timeEnd) && (
-          <button type="button" onClick={() => onChange({ ...form, timeStart: '', timeEnd: '' })} className="text-xs text-gray-400 hover:text-gray-600">
+          <button type="button" onClick={() => onChange({ ...form, timeStart: '', timeEnd: '' })} className={tw.muted + ' hover:text-gray-600 dark:hover:text-gray-300'}>
             Clear
           </button>
         )}
       </div>
       {(form.timeStart || form.timeEnd) && (
-        <p className="text-xs text-gray-400 -mt-1">{t('parent.tasks.timeHint')}</p>
+        <p className={`${tw.muted} -mt-1`}>{t('parent.tasks.timeHint')}</p>
       )}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
       <div className="flex gap-2 justify-end">
-        <button type="button" onClick={onCancel} className="text-sm text-gray-500 px-4 py-2 hover:bg-gray-50 rounded-lg">
+        <button type="button" onClick={onCancel} className={tw.btnCancel}>
           Cancel
         </button>
-        <button type="submit" className="bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-800">
+        <button type="submit" className={tw.btnPrimary}>
           {submitLabel}
         </button>
       </div>
@@ -282,11 +283,11 @@ export default function Tasks() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">{t('parent.tasks.title')}</h1>
+        <h1 className={tw.pageHeading}>{t('parent.tasks.title')}</h1>
         {!adding && !editId && (
           <button
             onClick={() => { setAdding(true); setForm(defaultForm); }}
-            className="bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors min-h-[36px]"
+            className={tw.btnPrimary}
           >
             + {t('parent.tasks.add')}
           </button>
@@ -307,8 +308,8 @@ export default function Tasks() {
       {ROUTINES.map((routine) => (
         grouped[routine].length > 0 && (
           <div key={routine} className="mb-6">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">{routineLabel[routine]}</h2>
-            <div className="bg-white rounded-xl border border-gray-100 divide-y divide-gray-50">
+            <h2 className={`${tw.sectionHeading} mb-2`}>{routineLabel[routine]}</h2>
+            <div className={`${tw.card} ${tw.cardDivide}`}>
               {grouped[routine].map((task) => (
                 <div key={task.id}>
                   {editId === task.id ? (
@@ -323,29 +324,29 @@ export default function Tasks() {
                       />
                     </div>
                   ) : (
-                    <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 flex-wrap">
+                    <div className={`flex items-center gap-3 px-4 py-3 ${tw.listRow} flex-wrap`}>
                       <span className="text-xl">{task.emoji}</span>
                       <div className="flex-1 min-w-0">
-                        <span className={`text-sm font-medium ${task.isActive ? 'text-gray-800' : 'text-gray-400 line-through'}`}>
+                        <span className={`text-sm font-medium ${task.isActive ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400 line-through'}`}>
                           {task.title}
                         </span>
                         <div className="flex gap-2 mt-0.5 flex-wrap">
                           {!task.isVisibleToChild && (
-                            <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">Parent only</span>
+                            <span className={tw.badgePurple}>Parent only</span>
                           )}
                           {task.timeStart && (
-                            <span className="text-xs text-gray-400">{task.timeStart}–{task.timeEnd ?? '…'}</span>
+                            <span className={tw.muted}>{task.timeStart}–{task.timeEnd ?? '…'}</span>
                           )}
                         </div>
                       </div>
-                      <span className="text-xs text-gray-400">{task.starValue}⭐</span>
+                      <span className={tw.muted}>{task.starValue}⭐</span>
 
                       {/* Complete button — shown for parent-only tasks */}
                       {!task.isVisibleToChild && task.isActive && (
                         <button
                           onClick={() => void handleComplete(task)}
                           disabled={completingId === task.id}
-                          className="text-xs bg-amber-100 text-amber-700 hover:bg-amber-200 px-2 py-1 rounded-md disabled:opacity-50"
+                          className={`${tw.badgeAmber} hover:bg-amber-200 dark:hover:bg-amber-900/60 disabled:opacity-50`}
                         >
                           {completingId === task.id ? '...' : '✓ Done'}
                         </button>
@@ -353,7 +354,7 @@ export default function Tasks() {
 
                       <button
                         onClick={() => void handleToggle(task)}
-                        className={`text-xs px-2 py-1 rounded-md ${task.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}
+                        className={task.isActive ? tw.badgeGreen : tw.badgeGray}
                       >
                         {task.isActive ? 'Active' : 'Inactive'}
                       </button>

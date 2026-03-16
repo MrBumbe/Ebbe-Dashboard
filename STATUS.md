@@ -127,6 +127,18 @@ Everything through Fix 13 + session 6 fixes is shipped.
 - Bug 6: Layout manager now shows widgets (backend returns DEFAULT_LAYOUT when DB is empty; setup seeds it; header widgets filtered from LayoutManager UI).
 - New: Redesigned child screen header — always-visible 3-column header (weather, clock+analog, stars) with 3 levels based on widget count. `AnalogClock.tsx` extracted as reusable component. `ChildHeader.tsx` created.
 
+## Session 10 fixes (2026-03-16)
+
+**Bug 1 — Children name input focus loss:**
+- `Children.tsx`: `ChildForm` was defined inside the `Children` function, causing React to recreate the component type on every render and unmount/remount the input. Moved `ChildForm` to module level with explicit props (same pattern as `TaskForm` in `Tasks.tsx`).
+- Proactive audit confirmed: `Users.tsx` edit form renders inputs directly (no nested component), `Events.tsx` form also inline — neither has this issue. Only `Children.tsx` needed the fix.
+
+**Bug 2 — Dark mode across all views:**
+- Created `frontend/src/lib/theme.ts` — semantic Tailwind class token constants (`tw.pageHeading`, `tw.card`, `tw.input`, `tw.btnPrimary`, etc.) with full class name strings so Tailwind scans them correctly. This is the single source of truth for the color system; all future components should import and use these tokens.
+- Applied dark mode to all older views that lacked it: `Tasks.tsx`, `Schedule.tsx`, `Events.tsx`, `Rewards.tsx`, `MoodLog.tsx`, `Timer.tsx`, `Settings.tsx`, `Dashboard.tsx`, `LayoutManager.tsx`, `Login.tsx`, `ModuleManager.tsx`.
+- Consistent dark mode pairs applied throughout: `bg-white dark:bg-gray-800`, `border-gray-100 dark:border-gray-700`, `divide-gray-50 dark:divide-gray-700`, `text-gray-800 dark:text-gray-100`, etc.
+- Child view components (`ChildApp`, `ChildHeader`, `TaskList`, etc.) intentionally left as-is — the child view uses a dynamic accent-color gradient as its background and is not part of the dark mode system.
+
 ## Session 9 fixes (2026-03-16)
 
 - Fix: Children page was empty for existing installs. Root cause: `POST /api/v1/setup` wrote the child token to `families.childToken` only — it never inserted a row into the new `children` table. Fix has two parts:
