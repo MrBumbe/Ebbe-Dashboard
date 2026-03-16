@@ -1,6 +1,6 @@
 # Ebbe — Build Status
 
-Last updated: 2026-03-14 (session 3)
+Last updated: 2026-03-16 (session 6)
 
 ---
 
@@ -12,6 +12,7 @@ Last updated: 2026-03-14 (session 3)
 | VS 2022 Build Tools + Windows SDK | Installed ✅ |
 | `backend/` npm install | Done ✅ |
 | `frontend/` npm install | Done ✅ |
+| Docker stack | Running ✅ |
 
 ---
 
@@ -20,19 +21,23 @@ Last updated: 2026-03-14 (session 3)
 | File | Status | Endpoints |
 |---|---|---|
 | `routes/auth.ts` | ✅ Done | `POST /api/v1/auth/login`, `POST /api/v1/auth/refresh` |
-| `routes/tasks.ts` | ✅ Done | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id`, `POST /:id/complete` |
-| `routes/rewards.ts` | ✅ Done | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id`, `POST /:id/redeem`, `GET /balance`, `GET /transactions` |
+| `routes/tasks.ts` | ✅ Done | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id`, `POST /:id/complete` — broadcasts TASK_UPDATED + STARS_UPDATED |
+| `routes/rewards.ts` | ✅ Done | Full CRUD, `GET /balance`, `GET /transactions`, `GET /requests`, `PATCH /requests/:id` (approve/deny), `POST /adjust` (manual) |
+| `routes/layouts.ts` | ✅ Done | `GET /`, `PUT /` (replace all), `PATCH /:widgetId` — broadcasts LAYOUT_UPDATED |
 | `routes/mood.ts` | ✅ Done | `GET /`, `POST /`, `DELETE /:id` |
 | `routes/schedule.ts` | ✅ Done | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id` |
 | `routes/settings.ts` | ✅ Done | `GET /`, `GET /:key`, `PUT /:key`, `DELETE /:key` |
 | `routes/events.ts` | ✅ Done | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id` |
-| `routes/child.ts` | ✅ Done | Child-safe endpoints via `?token=` auth |
+| `routes/child.ts` | ✅ Done | tasks (day/time filtered), complete, schedule, events, balance, transactions, rewards, reward requests, mood status/log, layout, settings (bundled), theme, weather |
+| `routes/setup.ts` | ✅ Done | First-run setup endpoint |
 
 ## Backend — Core
 
 | File | Status | Notes |
 |---|---|---|
-| `db/schema.ts` | ✅ Done | All tables incl. AI memory tables |
+| `db/schema.ts` | ✅ Done | All tables incl. reward_requests, child_layouts, AI memory tables |
+| `db/migrations/0000_initial.sql` | ✅ Done | Base schema |
+| `db/migrations/0001_v2_features.sql` | ✅ Done | New task columns + reward_requests + child_layouts |
 | `db/index.ts` | ✅ Done | SQLite singleton + auto-migration on startup |
 | `middleware/auth.ts` | ✅ Done | `requireAuth`, `requireRole` |
 | `middleware/childAuth.ts` | ✅ Done | `requireChildToken` |
@@ -40,86 +45,98 @@ Last updated: 2026-03-14 (session 3)
 | `lib/jwt.ts` | ✅ Done | sign/verify access + refresh tokens |
 | `lib/crypto.ts` | ✅ Done | Token generation utils |
 | `config.ts` | ✅ Done | Env var loading + validation |
-| `index.ts` | ✅ Done | Express + WebSocket setup, all routes mounted |
-| `websocket/index.ts` | ✅ Done | WS server + broadcast helpers |
-| `modules/core/types.ts` | ✅ Done | EbbeModule, WeatherModule, WeatherData interfaces |
-| `modules/core/registry.ts` | ✅ Done | Module registry singleton |
-| `modules/core/loader.ts` | ✅ Done | Registers + starts all built-in modules, mounts routes |
-| `modules/weather-openmeteo/` | ✅ Done | Open-Meteo, 10min cache, `/current` + `/config` routes |
+| `index.ts` | ✅ Done | All routes mounted including /api/v1/layouts |
+| `websocket/index.ts` | ✅ Done | WS server + broadcastToFamily helper |
+| `modules/weather-openmeteo/` | ✅ Done | Open-Meteo, 10min cache |
 
 ## Frontend
 
 | Area | Status | Notes |
 |---|---|---|
 | Vite + React + Tailwind setup | ✅ Done | |
-| i18n setup (sv + en) | ✅ Done | |
-| `api/client.ts` (axios + JWT refresh) | ✅ Done | |
-| `api/child.ts` (fetch + childToken) | ✅ Done | |
-| `api/websocket.ts` (WS client) | ✅ Done | |
+| i18n setup (sv + en) | ✅ Done | All new strings added |
+| `api/client.ts` | ✅ Done | axios + JWT refresh |
+| `api/child.ts` | ✅ Done | fetch + childToken; all new endpoints |
+| `api/websocket.ts` | ✅ Done | WS client; all new message types |
 | `store/useAuthStore.ts` | ✅ Done | |
-| `store/useChildStore.ts` | ✅ Done | |
-| `views/child/ChildApp.tsx` | ✅ Done | Token auth, WS, data loading, 3-col layout |
-| `views/child/Clock.tsx` | ✅ Done | SVG analog + digital, responsive |
-| `views/child/TaskList.tsx` | ✅ Done | Morning/evening, ≥64px tap targets |
-| `views/child/MoodCheckIn.tsx` | ✅ Done | ≥60px emoji buttons |
-| `views/child/RewardDisplay.tsx` | ✅ Done | Star count |
-| `views/child/WeekSchedule.tsx` | ✅ Done | 7-col grid, today highlighted |
+| `store/useChildStore.ts` | ✅ Done | includes rewards, transactions |
+| `views/child/ChildApp.tsx` | ✅ Done | Header-first layout; level 1/2/3 system; swipe pages; star overlays |
+| `views/child/AnalogClock.tsx` | ✅ Done | Standalone SVG analog clock (size via prop) |
+| `views/child/ChildHeader.tsx` | ✅ Done | Unified 3-col header: weather/date/weekday + clock + stars; 3 levels |
+| `views/child/Clock.tsx` | ✅ Done | (kept for reference; replaced by ChildHeader in child screen) |
+| `views/child/TaskList.tsx` | ✅ Done | Morning/evening/custom; compact mode |
+| `views/child/MoodCheckIn.tsx` | ✅ Done | Single row; activeMoods filter; cooldown |
+| `views/child/RewardDisplay.tsx` | ✅ Done | Star count; tappable; compact mode |
+| `views/child/StarStore.tsx` | ✅ Done | Full-screen overlay; 45s inactivity close |
+| `views/child/StarHistory.tsx` | ✅ Done | Full-screen overlay; 45s inactivity close |
+| `views/child/WeekSchedule.tsx` | ✅ Done | Starts from today; compact mode |
 | `views/child/UpcomingEvent.tsx` | ✅ Done | Countdown in days |
-| `views/child/TimerAlert.tsx` | ✅ Done | Full-screen overlay with SVG ring |
+| `views/child/TimerAlert.tsx` | ✅ Done | Fullscreen / minimized bar; Web Audio chime |
 | `views/parent/Login.tsx` | ✅ Done | |
-| `views/parent/ParentApp.tsx` | ✅ Done | Sidebar nav, mobile hamburger, auth guard |
+| `views/parent/ParentApp.tsx` | ✅ Done | Sidebar nav + Layout entry |
 | `views/parent/Dashboard.tsx` | ✅ Done | |
-| `views/parent/Tasks.tsx` | ✅ Done | Full CRUD |
-| `views/parent/Rewards.tsx` | ✅ Done | Full CRUD + balance |
-| `views/parent/Schedule.tsx` | ✅ Done | 7-day grid |
-| `views/parent/Events.tsx` | ✅ Done | Full CRUD |
-| `views/parent/MoodLog.tsx` | ✅ Done | Read-only list |
-| `views/parent/Timer.tsx` | ✅ Done | WS-connected, preset buttons |
-| `views/parent/Settings.tsx` | ✅ Done | Language + weather location search |
-| `views/parent/ModuleManager.tsx` | ✅ Done | Placeholder, full UI in v2 |
-| PWA manifest + icon | ✅ Done | SVG icon (`icon.svg`), apple-touch-icon in index.html |
+| `views/parent/Tasks.tsx` | ✅ Done | isVisibleToChild, daysOfWeek, timeWindow, routineName, parent Complete button |
+| `views/parent/Rewards.tsx` | ✅ Done | CRUD + pending requests + manual star adjustment |
+| `views/parent/LayoutManager.tsx` | ✅ Done | Enable/disable, reorder, page assignment per widget |
+| `views/parent/Schedule.tsx` | ✅ Done | |
+| `views/parent/Events.tsx` | ✅ Done | |
+| `views/parent/MoodLog.tsx` | ✅ Done | |
+| `views/parent/Timer.tsx` | ✅ Done | |
+| `views/parent/Settings.tsx` | ✅ Done | Language, weather, accent colour, store/history toggles, inactivity timeout |
+| `views/parent/ModuleManager.tsx` | ✅ Done | Placeholder |
+| PWA manifest + icon | ✅ Done | |
 
 ## Infrastructure
 
 | Item | Status | Notes |
 |---|---|---|
-| `docker-compose.yml` | ✅ Done | backend + frontend + caddy + litestream (backup profile) |
-| `Caddyfile` | ✅ Done | WS upgrade, CSP headers, gzip, auto-HTTPS |
-| `.env.example` | ✅ Done | All vars documented |
-| `backend/Dockerfile` | ✅ Done | node:22-alpine, multi-stage, copies migrations |
-| `frontend/Dockerfile` | ✅ Done | node:22-alpine builder + nginx:alpine |
-| `litestream.yml` | ✅ Done | 1min sync, 24h snapshot, 7d retention |
-| Backend health check | ✅ Done | `/api/v1/health` returns `{"status":"ok"}` |
-| Backend boot smoke test | ✅ Done | Server starts, migrations run, health check passes |
-| Full Docker stack boot | ⏳ Not tested | Requires Docker Desktop — run `docker compose up` |
+| `docker-compose.yml` | ✅ Done | |
+| `Caddyfile` | ✅ Done | |
+| `.env.example` | ✅ Done | |
+| `backend/Dockerfile` | ✅ Done | |
+| `frontend/Dockerfile` | ✅ Done | |
+| `litestream.yml` | ✅ Done | Optional backup profile |
+| TypeScript (frontend) | ✅ Clean | `npx tsc --noEmit` passes |
+| TypeScript (backend) | ✅ Clean | `npx tsc --noEmit` passes |
 
 ---
 
-## v1 Scope — Done ✅
+## v1 + Post-launch — All done ✅
 
-All v1 items are complete. The full stack is implemented:
-- All backend routes and middleware
-- Complete child + parent frontend
-- Module system with weather module
-- Docker Compose + Caddy + Litestream infrastructure
-- Auto-migration on startup
+Everything through Fix 13 + session 6 fixes is shipped.
 
-## Remaining Before GitHub Release
+**Session 6 fixes (2026-03-16):**
+- Bug 1: Transaction icons — `⭐` earn, `🎁` reward redemption, `✂️` manual deduction. Parent Rewards page now shows recent transaction history.
+- Bug 2: Settings now load from API on mount (store/history toggles + inactivity timeout persist correctly).
+- Bug 3: Star store/history overlays now show live countdown in the autoClose hint (`Closing in 42s`).
+- Bug 4: Analog clock restored — now always visible in the unified header (level 1 = large, level 2 = medium, level 3 = hidden/row).
+- Bug 5: Schedule items are now editable — click any item to open an inline edit form. Title is no longer truncated.
+- Bug 6: Layout manager now shows widgets (backend returns DEFAULT_LAYOUT when DB is empty; setup seeds it; header widgets filtered from LayoutManager UI).
+- New: Redesigned child screen header — always-visible 3-column header (weather, clock+analog, stars) with 3 levels based on widget count. `AnalogClock.tsx` extracted as reusable component. `ChildHeader.tsx` created.
 
-- [x] Full `docker compose up` integration test — all three services healthy, health check passes, setup endpoint works
-- [ ] Replace test data in `data/ebbe.db` (created during development, not included in git)
-- [x] Verify `.gitignore` excludes `data/` and `.env`
-- [x] Write `README.md` with quickstart instructions (Step-by-step for non-technical users)
-- [x] `routes/setup.ts` — first-run setup endpoint (creates family + admin, then locks itself)
+## Remaining before GitHub release
+
+- [ ] Clear test data from `data/ebbe.db` (not included in git — recreated on first run)
 - [ ] Tag `v0.1.0` release
 
+## Known v2/future items
+
+- Focus mode UI (`focusModeEnabled` DB field on tasks exists, no UI yet)
+- Vertical scroll page navigation (setting placeholder exists; only horizontal swipe now)
+- Math game module
+- Home Assistant integration
+- Full Module manager UI in parent
+- Capacitor APK build
+- AI conversation module
+
 ---
 
-## Known Notes
+## Important technical notes
 
-- **Drizzle 0.30.x + better-sqlite3**: Use `db.select().from(t).where(...).get()` / `.all()` for type-safe queries. The relational `db.query.*.findFirst()` API returns `SQLiteSyncRelationalQuery<T>` which has a TS typing issue in this version — avoid it.
-- **Password hash format**: `<salt_hex>:<hash_hex>` (scrypt, N=16384, r=8, p=1, keylen=64)
-- **Star economy**: completing a task writes to both `task_completions` AND `reward_transactions` (type=`earn`)
-- **PWA icons**: SVG icon used (`"sizes": "any"`) — works in Chrome/Edge/Firefox. PNG icons can be generated from `public/icons/icon.svg` using `sharp` or Inkscape if needed for older browser/OS support.
-- **Child token**: The `/child?token=xxx` URL is the kiosk URL. Store it in Fully Kiosk Browser on the child's tablet.
-- **Litestream**: Only runs when `docker compose --profile backup up` is used — optional backup service.
+- **Drizzle 0.30.x:** always use `db.select().from(t).where(...).get()` / `.all()` — NOT `db.query.*.findFirst()` (TypeScript typing issue)
+- **Dates:** always Unix milliseconds (integer) in SQLite and API responses
+- **family_id:** required on every table — non-negotiable for multi-tenant support
+- **Child token auth:** `?token=<childToken>` query param, separate from JWT
+- **Password hash format:** `<salt_hex>:<hash_hex>` (scrypt, N=16384, r=8, p=1, keylen=64)
+- **Star economy:** task completion writes to both `task_completions` AND `reward_transactions` (type=`earn`)
+- **Child kiosk URL:** `/child?token=xxx` — store in Fully Kiosk Browser on the child's device

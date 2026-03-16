@@ -191,9 +191,15 @@ tasks: {
   title: text             // stored in default language
   emoji: text
   routine: text           // "morning" | "evening" | "custom"
+  routineName: text | null  // display name when routine === "custom"
   order: integer
   starValue: integer      // stars earned on completion
   isActive: integer       // 0 | 1
+  isVisibleToChild: integer // 0 | 1 — if 0, only parent can mark complete
+  daysOfWeek: text        // JSON array e.g. "[0,1,2,3,4,5,6]" (0=Mon)
+  timeStart: text | null  // "HH:MM"
+  timeEnd: text | null    // "HH:MM"
+  focusModeEnabled: integer // 0 | 1 — reserved for focus mode UI (v2)
   createdAt: integer
 }
 
@@ -626,6 +632,87 @@ These are fixes added after v1 launch. Implement as v1 patches (not v2 features)
 - Child view applies colour as `linear-gradient(135deg, ${accent}ee, ${accent}99)`
 - Default: `#1565C0` (Ebbe blue)
 
+**Fix 7 — Task broadcasting + star sync (bugs 1 & 2)** ✅
+- `routes/tasks.ts` now broadcasts `TASK_UPDATED` to child on create/update/delete/complete
+- Task complete (parent route) also broadcasts `STARS_UPDATED` so child balance refreshes in real time
+
+**Fix 8 — WeekSchedule day order (bug 3)** ✅
+- Days array built from today forward: `Array.from({ length: 7 }, (_, i) => (today + i) % 7)`
+- Today is always the first column, highlighted in yellow
+
+**Fix 9 — Time-aware routines** ✅
+- Added to `tasks` table: `routineName`, `isVisibleToChild`, `daysOfWeek` (JSON), `timeStart`, `timeEnd`, `focusModeEnabled`
+- `routes/child.ts` filters tasks by `isVisibleToChild=true`, current weekday, and time window (show from 2h before start through end)
+- Parent Tasks form shows day toggles, time inputs, visibility checkbox, custom routine name field
+- Parent can mark non-visible tasks as done manually with a "Complete" button
+
+**Fix 10 — Modular layout system** ✅
+- New `child_layouts` table: `(familyId, pageNumber, widgetId, order, isEnabled, config)`
+- Widget IDs: `clock`, `star-balance`, `weather`, `routine-morning`, `routine-evening`, `routine-custom`, `week-schedule`, `upcoming-event`, `mood-checkin`, `timer-display`
+- `GET /child/layout` returns layout rows; falls back to `DEFAULT_LAYOUT` if none saved
+- `PUT /layouts` + `PATCH /layouts/:widgetId` in `routes/layouts.ts` (parent-auth)
+- Child `ChildApp.tsx` renders widgets in order from layout; compact mode when >6 widgets on page 1
+- Horizontal swipe page navigation; inactivity auto-reset to page 1 (configurable, default 45s)
+- Dot page indicator shown only when multiple pages exist
+- `LayoutManager.tsx` in parent view: enable/disable, reorder, page assignment per widget
+- WebSocket `LAYOUT_UPDATED` triggers child to re-fetch layout
+
+**Fix 11 — Star store + history** ✅
+- `StarStore.tsx`: full-screen overlay, 45s inactivity auto-close, "I want this" → `POST /child/rewards/:id/request`
+- `StarHistory.tsx`: full-screen overlay, 45s inactivity auto-close, scrollable transaction list
+- Star balance tappable in child view (when store or history enabled in settings)
+- `GET /child/settings` bundled endpoint: `accentColor`, `storeEnabled`, `historyEnabled`, `inactivitySeconds`, `activeMoods`
+- Parent Rewards page: pending request list with Approve/Deny buttons; manual star adjustment form
+- Settings page: toggles for store enabled, history enabled, inactivity timeout
+
+**Fix 12 — Mood check-in single row** ✅
+- MoodCheckIn: `flex gap-1 xl:gap-2` with `flex-1` buttons; all 7 moods fit on one row
+- `activeMoods` prop filters which moods are displayed; emoji `text-2xl xl:text-3xl`, label `text-[9px] xl:text-xs`
+
+**Fix 13 — Clock weekday label** ✅
+- `Clock.tsx`: shows current weekday name below the time, using `t('child.schedule.days.${ebbeDay}')`
+- `compact` prop: hides analog clock, smaller digital display
+
+---
+
+## Schema additions (v1 post-launch)
+
+New columns on `tasks`:
+```typescript
+routineName:       text | null       // used when routine === 'custom'
+isVisibleToChild:  boolean (default true)
+daysOfWeek:        text (JSON array, default '[0,1,2,3,4,5,6]')
+timeStart:         text | null       // "HH:MM"
+timeEnd:           text | null       // "HH:MM"
+focusModeEnabled:  boolean (default false)  // DB + prop only; no UI behavior yet
+```
+
+New tables:
+```typescript
+// reward_requests — child redemption requests awaiting parent approval
+reward_requests: {
+  id: text (uuid, PK)
+  familyId: text (FK)
+  rewardId: text (FK → rewards)
+  status: text              // "pending" | "approved" | "denied"
+  requestedAt: integer      // unix ms
+  resolvedAt: integer | null
+}
+
+// child_layouts — widget layout per family
+child_layouts: {
+  familyId: text (FK)
+  pageNumber: integer
+  widgetId: text
+  order: integer
+  isEnabled: integer        // boolean
+  config: text              // JSON string
+  PRIMARY KEY (familyId, pageNumber, widgetId)
+}
+```
+
+Migration: `backend/src/db/migrations/0001_v2_features.sql`
+
 ---
 
 ## v2 scope (future)
@@ -633,6 +720,8 @@ These are fixes added after v1 launch. Implement as v1 patches (not v2 features)
 - [ ] Home Assistant integration
 - [ ] Module manager UI
 - [ ] Capacitor APK build
+- [ ] Vertical scroll page navigation option (DB setting exists, horizontal swipe only for now)
+- [ ] Focus mode UI behavior (DB field `focusModeEnabled` already exists on tasks)
 
 ## v3 scope (future)
 - [ ] AI conversation module
