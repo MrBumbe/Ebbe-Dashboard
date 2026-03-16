@@ -7,6 +7,7 @@
     "tasks": {
       "morning": "Morning routine",
       "evening": "Evening routine",
+      "custom":  "Custom routine",
       "allDone": "Great job! All done! 🎉",
       "progress": "{{done}} of {{total}} done"
     },
@@ -25,7 +26,21 @@
     },
     "stars": {
       "label": "Stars",
-      "balance": "You have {{count}} stars!"
+      "balance": "You have {{count}} stars!",
+      "tapToOpen": "Tap to open store or history"
+    },
+    "store": {
+      "title":     "Star Store",
+      "balance":   "Your balance: {{count}} ⭐",
+      "want":      "I want this!",
+      "requested": "Requested ✓",
+      "empty":     "No rewards available right now.",
+      "autoClose": "Closing in {{seconds}}s"
+    },
+    "history": {
+      "title":     "Star History",
+      "empty":     "No transactions yet.",
+      "autoClose": "Closing in {{seconds}}s"
     },
     "timer": {
       "label": "In {{minutes}} min: {{activity}}"
@@ -57,6 +72,7 @@
       "rewards":   "Rewards",
       "mood":      "Mood log",
       "timer":     "Timer",
+      "layout":    "Layout",
       "settings":  "Settings"
     },
     "login": {
@@ -67,20 +83,36 @@
       "error":    "Incorrect email or password"
     },
     "tasks": {
-      "title":     "Routine tasks",
-      "add":       "Add task",
-      "morning":   "Morning",
-      "evening":   "Evening",
-      "starValue": "Stars",
-      "save":      "Save",
-      "delete":    "Delete"
+      "title":                "Routine tasks",
+      "add":                  "Add task",
+      "morning":              "Morning",
+      "evening":              "Evening",
+      "customRoutine":        "Custom routine",
+      "createNewRoutine":     "Create new routine",
+      "routineNamePlaceholder": "Routine name",
+      "titlePlaceholder":     "Task title",
+      "starValue":            "Stars",
+      "visibleToChild":       "Visible to child",
+      "activeDays":           "Active days",
+      "timeFrom":             "From",
+      "timeTo":               "To",
+      "timeHint":             "Task will appear 2 hours before start time.",
+      "save":                 "Save",
+      "delete":               "Delete"
     },
     "rewards": {
-      "title":    "Rewards",
-      "balance":  "Balance: {{count}} ⭐",
-      "add":      "Add reward",
-      "redeem":   "Redeem",
-      "starCost": "Stars"
+      "title":              "Rewards",
+      "balance":            "Balance: {{count}} ⭐",
+      "add":                "Add reward",
+      "redeem":             "Redeem",
+      "starCost":           "Stars",
+      "pendingRequests":    "Pending requests",
+      "approve":            "Approve",
+      "deny":               "Deny",
+      "manualAdjust":       "Manual star adjustment",
+      "adjustAmount":       "Amount",
+      "adjustDescription":  "Description",
+      "adjustSubmit":       "Apply"
     },
     "timer": {
       "title":   "Send a warning",
@@ -89,13 +121,23 @@
       "send":    "Send to screen",
       "cancel":  "Cancel timer"
     },
+    "layout": {
+      "title": "Child screen layout",
+      "hint":  "Enable, disable, and reorder widgets on the child screen.",
+      "page":  "Page {{number}}"
+    },
     "settings": {
-      "title":    "Settings",
-      "language": "Language",
-      "mood":     "Active mood types",
-      "ai":       "AI assistant",
-      "aiOn":     "Enabled",
-      "aiOff":    "Disabled"
+      "title":              "Settings",
+      "language":           "Language",
+      "mood":               "Active mood types",
+      "ai":                 "AI assistant",
+      "aiOn":               "Enabled",
+      "aiOff":              "Disabled",
+      "childFeatures":      "Child screen features",
+      "childFeaturesHint":  "Enable or disable optional features on the child screen.",
+      "storeEnabled":       "Star store",
+      "historyEnabled":     "Star history",
+      "inactivitySeconds":  "Inactivity timeout (seconds)"
     }
   },
   "errors": {
