@@ -4,7 +4,7 @@ import { randomUUID } from 'crypto';
 import { getDb } from '../db';
 import {
   tasks, taskCompletions, scheduleItems, events, moodLog,
-  rewardTransactions, rewards, rewardRequests, modules, settings, childLayouts,
+  rewardTransactions, rewards, rewardRequests, modules, settings, childLayouts, children,
 } from '../db/schema';
 import { requireChildToken, ChildRequest } from '../middleware/childAuth';
 import { broadcastToFamily } from '../websocket';
@@ -83,8 +83,13 @@ router.get('/tasks', (req: ChildRequest, res: Response) => {
     .orderBy(asc(tasks.order))
     .all();
 
+  const childId = (req as ChildRequest).childId;
   const completions = db.select().from(taskCompletions)
-    .where(and(eq(taskCompletions.familyId, familyId), gte(taskCompletions.completedAt, startOfToday())))
+    .where(and(
+      eq(taskCompletions.familyId, familyId),
+      gte(taskCompletions.completedAt, startOfToday()),
+      ...(childId ? [eq(taskCompletions.childId, childId)] : []),
+    ))
     .all();
 
   const completedIds = new Set(completions.map(c => c.taskId));
@@ -99,6 +104,7 @@ router.get('/tasks', (req: ChildRequest, res: Response) => {
 router.post('/tasks/:id/complete', (req: ChildRequest, res: Response) => {
   const { id } = req.params;
   const familyId = req.familyId!;
+  const childId = req.childId;
   const db = getDb();
 
   const task = db.select().from(tasks)
@@ -115,6 +121,7 @@ router.post('/tasks/:id/complete', (req: ChildRequest, res: Response) => {
       eq(taskCompletions.taskId, id),
       eq(taskCompletions.familyId, familyId),
       gte(taskCompletions.completedAt, startOfToday()),
+      ...(childId ? [eq(taskCompletions.childId, childId)] : []),
     ))
     .get();
 
@@ -128,6 +135,7 @@ router.post('/tasks/:id/complete', (req: ChildRequest, res: Response) => {
   db.insert(taskCompletions).values({
     id: randomUUID(),
     familyId,
+    childId: childId ?? null,
     taskId: id,
     completedAt: now,
     starsAwarded: task.starValue,
@@ -136,6 +144,7 @@ router.post('/tasks/:id/complete', (req: ChildRequest, res: Response) => {
   db.insert(rewardTransactions).values({
     id: randomUUID(),
     familyId,
+    childId: childId ?? null,
     type: 'earn',
     amount: task.starValue,
     description: task.title,
@@ -143,7 +152,12 @@ router.post('/tasks/:id/complete', (req: ChildRequest, res: Response) => {
     createdAt: now,
   }).run();
 
-  const txRows = db.select().from(rewardTransactions).where(eq(rewardTransactions.familyId, familyId)).all();
+  const txRows = db.select().from(rewardTransactions)
+    .where(and(
+      eq(rewardTransactions.familyId, familyId),
+      ...(childId ? [eq(rewardTransactions.childId, childId)] : []),
+    ))
+    .all();
   const balance = txRows.reduce((acc, r) => r.type === 'earn' ? acc + r.amount : acc - r.amount, 0);
   broadcastToFamily(familyId, 'all', { type: 'STARS_UPDATED', payload: { balance } });
 
@@ -187,8 +201,14 @@ router.get('/events', (req: ChildRequest, res: Response) => {
 router.get('/balance', (req: ChildRequest, res: Response) => {
   const db = getDb();
   const familyId = req.familyId!;
+  const childId = req.childId;
 
-  const rows = db.select().from(rewardTransactions).where(eq(rewardTransactions.familyId, familyId)).all();
+  const rows = db.select().from(rewardTransactions)
+    .where(and(
+      eq(rewardTransactions.familyId, familyId),
+      ...(childId ? [eq(rewardTransactions.childId, childId)] : []),
+    ))
+    .all();
   const balance = rows.reduce((acc, r) => r.type === 'earn' ? acc + r.amount : acc - r.amount, 0);
 
   res.json({ data: { balance } });
@@ -198,10 +218,14 @@ router.get('/balance', (req: ChildRequest, res: Response) => {
 router.get('/transactions', (req: ChildRequest, res: Response) => {
   const db = getDb();
   const familyId = req.familyId!;
+  const childId = req.childId;
   const limit = Math.min(parseInt(req.query.limit as string || '30'), 100);
 
   const rows = db.select().from(rewardTransactions)
-    .where(eq(rewardTransactions.familyId, familyId))
+    .where(and(
+      eq(rewardTransactions.familyId, familyId),
+      ...(childId ? [eq(rewardTransactions.childId, childId)] : []),
+    ))
     .orderBy(desc(rewardTransactions.createdAt))
     .limit(limit)
     .all();
@@ -338,6 +362,7 @@ router.get('/layout', (req: ChildRequest, res: Response) => {
 // GET /api/v1/child/settings — all child-relevant settings in one call
 router.get('/settings', (req: ChildRequest, res: Response) => {
   const familyId = req.familyId!;
+  const childId = req.childId;
   const db = getDb();
 
   const rows = db.select().from(settings).where(eq(settings.familyId, familyId)).all();
@@ -349,9 +374,16 @@ router.get('/settings', (req: ChildRequest, res: Response) => {
     try { return JSON.parse(val) as T; } catch { return fallback; }
   }
 
+  // Per-child accent color takes precedence over family-level setting
+  let accentColor = getSetting<string>('child.accentColor', '#1565C0');
+  if (childId) {
+    const child = db.select().from(children).where(eq(children.id, childId)).get();
+    if (child?.color) accentColor = child.color;
+  }
+
   res.json({
     data: {
-      accentColor: getSetting<string>('child.accentColor', '#1565C0'),
+      accentColor,
       storeEnabled: getSetting<boolean>('store.enabled', false),
       historyEnabled: getSetting<boolean>('history.enabled', false),
       inactivitySeconds: getSetting<number>('inactivity.seconds', 45),
@@ -363,13 +395,19 @@ router.get('/settings', (req: ChildRequest, res: Response) => {
 // GET /api/v1/child/theme — child accent colour (kept for backwards compat)
 router.get('/theme', (req: ChildRequest, res: Response) => {
   const familyId = req.familyId!;
+  const childId = req.childId;
   const db = getDb();
 
   const row = db.select().from(settings)
     .where(and(eq(settings.familyId, familyId), eq(settings.key, 'child.accentColor')))
     .get();
 
-  const accentColor = row ? (JSON.parse(row.value) as string) : '#1565C0';
+  let accentColor = row ? (JSON.parse(row.value) as string) : '#1565C0';
+  if (childId) {
+    const child = db.select().from(children).where(eq(children.id, childId)).get();
+    if (child?.color) accentColor = child.color;
+  }
+
   res.json({ data: { accentColor } });
 });
 

@@ -69,6 +69,7 @@ export const tasks = sqliteTable('tasks', {
 export const taskCompletions = sqliteTable('task_completions', {
   id:           text('id').primaryKey(),
   familyId:     text('family_id').notNull().references(() => families.id),
+  childId:      text('child_id'),              // null = legacy (family-level); set = per-child
   taskId:       text('task_id').notNull().references(() => tasks.id),
   completedAt:  integer('completed_at').notNull(),
   starsAwarded: integer('stars_awarded').notNull(),
@@ -123,6 +124,7 @@ export const rewards = sqliteTable('rewards', {
 export const rewardTransactions = sqliteTable('reward_transactions', {
   id:           text('id').primaryKey(),
   familyId:     text('family_id').notNull().references(() => families.id),
+  childId:      text('child_id'),              // null = legacy (family-level); set = per-child
   type:         text('type', { enum: ['earn', 'redeem'] }).notNull(),
   amount:       integer('amount').notNull(),
   description:  text('description').notNull(),

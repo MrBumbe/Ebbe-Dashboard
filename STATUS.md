@@ -1,6 +1,6 @@
 # Ebbe — Build Status
 
-Last updated: 2026-03-16 (session 8)
+Last updated: 2026-03-16 (session 11)
 
 ---
 
@@ -126,6 +126,23 @@ Everything through Fix 13 + session 6 fixes is shipped.
 - Bug 5: Schedule items are now editable — click any item to open an inline edit form. Title is no longer truncated.
 - Bug 6: Layout manager now shows widgets (backend returns DEFAULT_LAYOUT when DB is empty; setup seeds it; header widgets filtered from LayoutManager UI).
 - New: Redesigned child screen header — always-visible 3-column header (weather, clock+analog, stars) with 3 levels based on widget count. `AnalogClock.tsx` extracted as reusable component. `ChildHeader.tsx` created.
+
+## Session 11 fixes (2026-03-16)
+
+**Bug 1 — Per-child data isolation:**
+- `middleware/childAuth.ts`: swapped check order — `children.childToken` is checked FIRST (sets both `req.familyId` and `req.childId`), then falls back to `families.childToken` legacy path. Ensures `req.childId` is always set when a known child token is used.
+- `db/schema.ts`: added `childId` (nullable text) to `taskCompletions` and `rewardTransactions`. Nullable for backward compatibility — existing rows have null.
+- `db/migrations/0004_per_child_data.sql`: new migration with two `ALTER TABLE ADD child_id text` statements.
+- `db/migrations/meta/_journal.json`: added entry for `0004_per_child_data` (idx: 4).
+- `db/index.ts`: added Fixup 2 — on startup, for families with exactly one child, migrates all null-`child_id` rows in `reward_transactions` and `task_completions` to that child's ID. Preserves historical balances on upgrade.
+- `routes/child.ts`: all queries now scoped by `req.childId` when set:
+  - `/tasks`: completions filtered by `childId`
+  - `/tasks/:id/complete`: `alreadyDone` check scoped by `childId`; `taskCompletions` insert includes `childId`; `rewardTransactions` insert includes `childId`; balance calculation scoped by `childId`
+  - `/balance`: transactions filtered by `childId`
+  - `/transactions`: transactions filtered by `childId`
+
+**Bug 2 — Per-child accent color:**
+- `routes/child.ts` (`/settings` and `/theme`): when `req.childId` is set, looks up `children.color` and returns it as `accentColor`, overriding the family-level `settings.child.accentColor` fallback. Each child now sees their own color on the child screen.
 
 ## Session 10 fixes (2026-03-16)
 

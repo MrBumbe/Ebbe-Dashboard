@@ -16,18 +16,21 @@ export function requireChildToken(req: ChildRequest, _res: Response, next: NextF
   }
   const db = getDb();
 
-  // Check legacy families.childToken first (backward compat)
-  const family = db.select().from(families).where(eq(families.childToken, token)).get();
-  if (family) {
-    req.familyId = family.id;
-    return next();
-  }
-
-  // Check children.childToken (per-child tokens added in v1.1)
+  // Check children.childToken FIRST — covers both per-child tokens and the legacy
+  // token that db/index.ts migrated into the children table on startup.
+  // This ensures req.childId is always set when a known child token is used.
   const child = db.select().from(children).where(eq(children.childToken, token)).get();
   if (child) {
     req.familyId = child.familyId;
     req.childId = child.id;
+    return next();
+  }
+
+  // Fall back to legacy families.childToken for installs where the children
+  // table entry hasn't been created yet (edge case; startup fixup covers this).
+  const family = db.select().from(families).where(eq(families.childToken, token)).get();
+  if (family) {
+    req.familyId = family.id;
     return next();
   }
 
