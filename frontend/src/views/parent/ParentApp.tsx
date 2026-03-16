@@ -11,6 +11,7 @@ import MoodLog from './MoodLog';
 import Timer from './Timer';
 import Settings from './Settings';
 import ModuleManager from './ModuleManager';
+import LayoutManager from './LayoutManager';
 
 const NAV = [
   { to: '',          icon: '🏠', key: 'dashboard' },
@@ -20,6 +21,7 @@ const NAV = [
   { to: 'rewards',   icon: '⭐', key: 'rewards' },
   { to: 'mood',      icon: '😊', key: 'mood' },
   { to: 'timer',     icon: '⏱️', key: 'timer' },
+  { to: 'layout',    icon: '🧩', key: 'layout' },
   { to: 'settings',  icon: '⚙️', key: 'settings' },
 ] as const;
 
@@ -115,6 +117,7 @@ export default function ParentApp() {
             <Route path="rewards" element={<Rewards />} />
             <Route path="mood" element={<MoodLog />} />
             <Route path="timer" element={<Timer />} />
+            <Route path="layout" element={<LayoutManager />} />
             <Route path="settings" element={<Settings />} />
             <Route path="modules" element={<ModuleManager />} />
           </Routes>

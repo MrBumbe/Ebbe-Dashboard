@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 import client from '../../api/client';
@@ -92,6 +92,35 @@ export default function Settings() {
     } catch { /* ignore */ }
   }
 
+  // Child screen feature toggles
+  const [storeEnabled, setStoreEnabled] = useState(false);
+  const [historyEnabled, setHistoryEnabled] = useState(false);
+  const [inactivitySeconds, setInactivitySeconds] = useState(45);
+  const [featuresSaved, setFeaturesSaved] = useState(false);
+
+  useEffect(() => {
+    client.get<{ data: Record<string, unknown> }>('/settings').then((res) => {
+      const d = res.data.data;
+      if (typeof d['store.enabled'] === 'boolean') setStoreEnabled(d['store.enabled']);
+      if (typeof d['history.enabled'] === 'boolean') setHistoryEnabled(d['history.enabled']);
+      if (typeof d['inactivity.seconds'] === 'number') setInactivitySeconds(d['inactivity.seconds']);
+      if (typeof d['child.accentColor'] === 'string') setAccentColor(d['child.accentColor']);
+    }).catch(() => {});
+  }, []);
+
+  async function handleFeaturesSave() {
+    setFeaturesSaved(false);
+    try {
+      await Promise.all([
+        client.put('/settings/store.enabled', { value: JSON.stringify(storeEnabled) }),
+        client.put('/settings/history.enabled', { value: JSON.stringify(historyEnabled) }),
+        client.put('/settings/inactivity.seconds', { value: JSON.stringify(inactivitySeconds) }),
+      ]);
+      setFeaturesSaved(true);
+      setTimeout(() => setFeaturesSaved(false), 2000);
+    } catch { /* ignore */ }
+  }
+
   return (
     <div className="max-w-lg">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('parent.settings.title')}</h1>
@@ -181,6 +210,52 @@ export default function Settings() {
           ))}
         </div>
         {colorSaved && <p className="text-xs text-green-600 mt-2">✓ Colour saved</p>}
+      </section>
+
+      {/* Child screen features */}
+      <section className="bg-white rounded-xl border border-gray-100 p-5 mb-4">
+        <h2 className="text-sm font-semibold text-gray-700 mb-1">{t('parent.settings.childFeatures')}</h2>
+        <p className="text-xs text-gray-400 mb-4">{t('parent.settings.childFeaturesHint')}</p>
+        <div className="flex flex-col gap-3">
+          <label className="flex items-center justify-between gap-4">
+            <span className="text-sm text-gray-700">{t('parent.settings.storeEnabled')}</span>
+            <input
+              type="checkbox"
+              checked={storeEnabled}
+              onChange={(e) => setStoreEnabled(e.target.checked)}
+              className="rounded"
+            />
+          </label>
+          <label className="flex items-center justify-between gap-4">
+            <span className="text-sm text-gray-700">{t('parent.settings.historyEnabled')}</span>
+            <input
+              type="checkbox"
+              checked={historyEnabled}
+              onChange={(e) => setHistoryEnabled(e.target.checked)}
+              className="rounded"
+            />
+          </label>
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-sm text-gray-700">{t('parent.settings.inactivitySeconds')}</span>
+            <input
+              type="number"
+              min={10}
+              max={300}
+              value={inactivitySeconds}
+              onChange={(e) => setInactivitySeconds(parseInt(e.target.value))}
+              className="w-20 border rounded-lg px-2 py-1.5 text-sm text-center"
+            />
+          </div>
+        </div>
+        {featuresSaved && <p className="text-xs text-green-600 mt-3">✓ Saved</p>}
+        <div className="flex justify-end mt-3">
+          <button
+            onClick={() => void handleFeaturesSave()}
+            className="bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-800"
+          >
+            {t('parent.tasks.save')}
+          </button>
+        </div>
       </section>
     </div>
   );
