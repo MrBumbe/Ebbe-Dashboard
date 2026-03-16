@@ -21,15 +21,21 @@ export const users = sqliteTable('users', {
 
 // ── Routine tasks ────────────────────────────────────────────
 export const tasks = sqliteTable('tasks', {
-  id:           text('id').primaryKey(),
-  familyId:     text('family_id').notNull().references(() => families.id),
-  title:        text('title').notNull(),
-  emoji:        text('emoji').notNull().default('⭐'),
-  routine:      text('routine', { enum: ['morning', 'evening', 'custom'] }).notNull(),
-  order:        integer('order').notNull().default(0),
-  starValue:    integer('star_value').notNull().default(1),
-  isActive:     integer('is_active', { mode: 'boolean' }).notNull().default(true),
-  createdAt:    integer('created_at').notNull(),
+  id:                text('id').primaryKey(),
+  familyId:          text('family_id').notNull().references(() => families.id),
+  title:             text('title').notNull(),
+  emoji:             text('emoji').notNull().default('⭐'),
+  routine:           text('routine', { enum: ['morning', 'evening', 'custom'] }).notNull(),
+  routineName:       text('routine_name'),                    // display name for custom routines
+  order:             integer('order').notNull().default(0),
+  starValue:         integer('star_value').notNull().default(1),
+  isActive:          integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  isVisibleToChild:  integer('is_visible_to_child', { mode: 'boolean' }).notNull().default(true),
+  daysOfWeek:        text('days_of_week').notNull().default('[0,1,2,3,4,5,6]'), // JSON array 0=Mon
+  timeStart:         text('time_start'),                      // "HH:MM" or null = always
+  timeEnd:           text('time_end'),                        // "HH:MM" or null = always
+  focusModeEnabled:  integer('focus_mode_enabled', { mode: 'boolean' }).notNull().default(false),
+  createdAt:         integer('created_at').notNull(),
 });
 
 // ── Task completions log ─────────────────────────────────────
@@ -94,6 +100,16 @@ export const rewardTransactions = sqliteTable('reward_transactions', {
   createdAt:    integer('created_at').notNull(),
 });
 
+// ── Child reward requests (pending redemptions) ──────────────
+export const rewardRequests = sqliteTable('reward_requests', {
+  id:           text('id').primaryKey(),
+  familyId:     text('family_id').notNull().references(() => families.id),
+  rewardId:     text('reward_id').notNull().references(() => rewards.id),
+  status:       text('status', { enum: ['pending', 'approved', 'denied'] }).notNull().default('pending'),
+  requestedAt:  integer('requested_at').notNull(),
+  resolvedAt:   integer('resolved_at'),
+});
+
 // ── Key/value settings per family ───────────────────────────
 export const settings = sqliteTable('settings', {
   familyId:     text('family_id').notNull().references(() => families.id),
@@ -111,6 +127,20 @@ export const modules = sqliteTable('modules', {
   config:       text('config').notNull().default('{}'), // JSON string
 }, (t) => ({
   pk: primaryKey({ columns: [t.familyId, t.moduleId] }),
+}));
+
+// ── Child screen widget layout ───────────────────────────────
+// widgetId values: clock, weather, routine-morning, routine-evening, routine-custom,
+//   week-schedule, upcoming-event, mood-checkin, star-balance, timer-display
+export const childLayouts = sqliteTable('child_layouts', {
+  familyId:    text('family_id').notNull().references(() => families.id),
+  pageNumber:  integer('page_number').notNull().default(1),
+  widgetId:    text('widget_id').notNull(),
+  order:       integer('order').notNull().default(0),
+  isEnabled:   integer('is_enabled', { mode: 'boolean' }).notNull().default(true),
+  config:      text('config').notNull().default('{}'), // JSON string, widget-specific overrides
+}, (t) => ({
+  pk: primaryKey({ columns: [t.familyId, t.pageNumber, t.widgetId] }),
 }));
 
 // ── AI memory (v3 — tables created now, populated later) ────

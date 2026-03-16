@@ -7,7 +7,7 @@ import { Router, Request, Response } from 'express';
 import { randomUUID } from 'crypto';
 import { scryptSync, randomBytes } from 'crypto';
 import { getDb } from '../db';
-import { families, users } from '../db/schema';
+import { families, users, childLayouts } from '../db/schema';
 
 const router = Router();
 
@@ -64,6 +64,19 @@ router.post('/', (req: Request, res: Response) => {
     role: 'admin',
     createdAt: now,
   }).run();
+
+  const layoutEntries = [
+    { pageNumber: 1, widgetId: 'routine-morning',  order: 0, isEnabled: true,  config: '{}' },
+    { pageNumber: 1, widgetId: 'routine-evening',  order: 1, isEnabled: true,  config: '{}' },
+    { pageNumber: 1, widgetId: 'mood-checkin',     order: 2, isEnabled: true,  config: '{}' },
+    { pageNumber: 1, widgetId: 'upcoming-event',   order: 3, isEnabled: true,  config: '{}' },
+    { pageNumber: 1, widgetId: 'week-schedule',    order: 4, isEnabled: true,  config: '{}' },
+    { pageNumber: 1, widgetId: 'timer-display',    order: 5, isEnabled: false, config: '{}' },
+    { pageNumber: 2, widgetId: 'routine-custom',   order: 0, isEnabled: false, config: '{}' },
+  ];
+  for (const entry of layoutEntries) {
+    db.insert(childLayouts).values({ familyId, ...entry }).run();
+  }
 
   res.status(201).json({
     data: {

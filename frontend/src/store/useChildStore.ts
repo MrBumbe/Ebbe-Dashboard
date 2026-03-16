@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { TaskItem, ScheduleItem, EventItem, WeatherData } from '../api/child';
+import type { TaskItem, ScheduleItem, EventItem, WeatherData, RewardItem, TransactionItem } from '../api/child';
 
 interface ActiveTimer {
   label: string;
@@ -18,6 +18,8 @@ interface ChildState {
   timer: ActiveTimer | null;
   timerMinimized: boolean;
   accentColor: string;
+  rewards: RewardItem[];
+  transactions: TransactionItem[];
 
   setToken: (token: string) => void;
   setTasks: (tasks: TaskItem[]) => void;
@@ -28,6 +30,8 @@ interface ChildState {
   setWeather: (data: WeatherData | null) => void;
   setMoodCooldown: (endsAt: number | null) => void;
   setAccentColor: (color: string) => void;
+  setRewards: (items: RewardItem[]) => void;
+  setTransactions: (items: TransactionItem[]) => void;
   startTimer: (seconds: number, label: string) => void;
   cancelTimer: () => void;
   tickTimer: () => void;
@@ -45,6 +49,8 @@ export const useChildStore = create<ChildState>((set) => ({
   timer: null,
   timerMinimized: false,
   accentColor: '#1565C0',
+  rewards: [],
+  transactions: [],
 
   setToken: (token) => set({ token }),
 
@@ -68,6 +74,10 @@ export const useChildStore = create<ChildState>((set) => ({
 
   setAccentColor: (accentColor) => set({ accentColor }),
 
+  setRewards: (rewards) => set({ rewards }),
+
+  setTransactions: (transactions) => set({ transactions }),
+
   startTimer: (seconds, label) =>
     set({ timer: { label, totalSeconds: seconds, remaining: seconds }, timerMinimized: false }),
 
@@ -78,7 +88,6 @@ export const useChildStore = create<ChildState>((set) => ({
       if (!s.timer) return s;
       const remaining = s.timer.remaining - 1;
       if (remaining <= 0) return { timer: null, timerMinimized: false };
-      // Force fullscreen when ≤ 60 seconds left
       const timerMinimized = s.timerMinimized && remaining > 60;
       return { timer: { ...s.timer, remaining }, timerMinimized };
     }),

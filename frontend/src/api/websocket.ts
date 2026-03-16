@@ -4,8 +4,11 @@
 export type WsMessage =
   | { type: 'TIMER_START'; payload: { seconds: number; label: string } }
   | { type: 'TIMER_CANCEL' }
-  | { type: 'TASK_UPDATED'; payload: { taskId: string; isComplete: boolean } }
-  | { type: 'STARS_UPDATED'; payload: { balance: number } };
+  | { type: 'TASK_UPDATED'; payload: { taskId: string; action: string } }
+  | { type: 'STARS_UPDATED'; payload: { balance: number } }
+  | { type: 'LAYOUT_UPDATED' }
+  | { type: 'REWARD_REQUESTED'; payload: { requestId: string; rewardId: string; rewardTitle: string } }
+  | { type: 'REQUEST_RESOLVED'; payload: { requestId: string; action: string } };
 
 type MessageHandler = (msg: WsMessage) => void;
 

@@ -16,6 +16,7 @@ import settingsRoutes from './routes/settings';
 import eventsRoutes from './routes/events';
 import childRoutes from './routes/child';
 import setupRoutes from './routes/setup';
+import layoutsRoutes from './routes/layouts';
 
 const app = express();
 const httpServer = createServer(app);
@@ -40,6 +41,7 @@ app.use('/api/v1/settings', settingsRoutes);
 app.use('/api/v1/events', eventsRoutes);
 app.use('/api/v1/child', childRoutes);
 app.use('/api/v1/setup', setupRoutes);
+app.use('/api/v1/layouts', layoutsRoutes);
 
 // Module routes — mounted dynamically by loader
 initModules(app);

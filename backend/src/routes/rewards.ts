@@ -1,9 +1,10 @@
 import { Router, Response } from 'express';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { getDb } from '../db';
-import { rewards, rewardTransactions } from '../db/schema';
+import { rewards, rewardTransactions, rewardRequests } from '../db/schema';
 import { requireAuth, requireRole, AuthRequest } from '../middleware/auth';
+import { broadcastToFamily } from '../websocket';
 
 const router = Router();
 
@@ -32,9 +33,146 @@ router.get('/transactions', (req: AuthRequest, res: Response) => {
 
   const rows = db.select().from(rewardTransactions)
     .where(eq(rewardTransactions.familyId, familyId))
+    .orderBy(desc(rewardTransactions.createdAt))
     .all();
 
   res.json({ data: rows });
+});
+
+// GET /api/v1/rewards/requests — pending child redemption requests
+router.get('/requests', (req: AuthRequest, res: Response) => {
+  const db = getDb();
+  const familyId = req.user!.familyId;
+
+  const requests = db.select().from(rewardRequests)
+    .where(eq(rewardRequests.familyId, familyId))
+    .orderBy(desc(rewardRequests.requestedAt))
+    .all();
+
+  // Join reward details
+  const allRewards = db.select().from(rewards).where(eq(rewards.familyId, familyId)).all();
+  const rewardMap = new Map(allRewards.map(r => [r.id, r]));
+
+  const enriched = requests.map(r => ({
+    ...r,
+    reward: rewardMap.get(r.rewardId) ?? null,
+  }));
+
+  res.json({ data: enriched });
+});
+
+// PATCH /api/v1/rewards/requests/:id — approve or deny a request
+router.patch('/requests/:id', requireRole('admin', 'parent'), (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const familyId = req.user!.familyId;
+  const { action } = req.body as { action?: 'approve' | 'deny' };
+
+  if (!action || !['approve', 'deny'].includes(action)) {
+    res.status(400).json({ error: { code: 'INVALID_ACTION', message: 'action must be approve or deny' } });
+    return;
+  }
+
+  const db = getDb();
+
+  const request = db.select().from(rewardRequests)
+    .where(and(eq(rewardRequests.id, id), eq(rewardRequests.familyId, familyId)))
+    .get();
+
+  if (!request) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Request not found' } });
+    return;
+  }
+
+  if (request.status !== 'pending') {
+    res.status(409).json({ error: { code: 'ALREADY_RESOLVED', message: 'Request already resolved' } });
+    return;
+  }
+
+  const now = Date.now();
+
+  if (action === 'approve') {
+    const reward = db.select().from(rewards)
+      .where(and(eq(rewards.id, request.rewardId), eq(rewards.familyId, familyId)))
+      .get();
+
+    if (!reward) {
+      res.status(404).json({ error: { code: 'REWARD_NOT_FOUND', message: 'Reward not found' } });
+      return;
+    }
+
+    // Check balance
+    const txRows = db.select().from(rewardTransactions).where(eq(rewardTransactions.familyId, familyId)).all();
+    const balance = txRows.reduce((acc, r) => r.type === 'earn' ? acc + r.amount : acc - r.amount, 0);
+
+    if (balance < reward.starCost) {
+      res.status(400).json({ error: { code: 'INSUFFICIENT_STARS', message: `Need ${reward.starCost} stars, have ${balance}` } });
+      return;
+    }
+
+    // Deduct stars
+    db.insert(rewardTransactions).values({
+      id: randomUUID(),
+      familyId,
+      type: 'redeem',
+      amount: reward.starCost,
+      description: `Redeemed: ${reward.title}`,
+      relatedId: reward.id,
+      createdAt: now,
+    }).run();
+
+    // Recalculate and broadcast
+    const newTxRows = db.select().from(rewardTransactions).where(eq(rewardTransactions.familyId, familyId)).all();
+    const newBalance = newTxRows.reduce((acc, r) => r.type === 'earn' ? acc + r.amount : acc - r.amount, 0);
+    broadcastToFamily(familyId, 'all', { type: 'STARS_UPDATED', payload: { balance: newBalance } });
+  }
+
+  db.update(rewardRequests)
+    .set({ status: action === 'approve' ? 'approved' : 'denied', resolvedAt: now })
+    .where(eq(rewardRequests.id, id))
+    .run();
+
+  // Notify child of decision
+  broadcastToFamily(familyId, 'child', {
+    type: 'REQUEST_RESOLVED',
+    payload: { requestId: id, action },
+  });
+
+  res.json({ data: { id, status: action === 'approve' ? 'approved' : 'denied' } });
+});
+
+// POST /api/v1/rewards/adjust — manual star adjustment by parent
+router.post('/adjust', requireRole('admin', 'parent'), (req: AuthRequest, res: Response) => {
+  const { amount, description } = req.body as { amount?: number; description?: string };
+  const familyId = req.user!.familyId;
+
+  if (amount === undefined || !description) {
+    res.status(400).json({ error: { code: 'MISSING_FIELDS', message: 'amount and description are required' } });
+    return;
+  }
+  if (!Number.isInteger(amount) || amount === 0) {
+    res.status(400).json({ error: { code: 'INVALID_AMOUNT', message: 'amount must be a non-zero integer' } });
+    return;
+  }
+
+  const db = getDb();
+  const now = Date.now();
+
+  db.insert(rewardTransactions).values({
+    id: randomUUID(),
+    familyId,
+    type: amount > 0 ? 'earn' : 'redeem',
+    amount: Math.abs(amount),
+    description,
+    relatedId: null,
+    createdAt: now,
+  }).run();
+
+  const txRows = db.select().from(rewardTransactions).where(eq(rewardTransactions.familyId, familyId)).all();
+  const balance = txRows.reduce((acc, r) => r.type === 'earn' ? acc + r.amount : acc - r.amount, 0);
+
+  broadcastToFamily(familyId, 'all', { type: 'STARS_UPDATED', payload: { balance } });
+
+  res.status(201).json({ data: { balance } });
 });
 
 // GET /api/v1/rewards — list reward catalog
@@ -141,64 +279,6 @@ router.delete('/:id', requireRole('admin', 'parent'), (req: AuthRequest, res: Re
 
   db.delete(rewards).where(and(eq(rewards.id, id), eq(rewards.familyId, familyId))).run();
   res.status(204).send();
-});
-
-// POST /api/v1/rewards/:id/redeem — redeem a reward, deduct stars
-router.post('/:id/redeem', (req: AuthRequest, res: Response) => {
-  const { id } = req.params;
-  const familyId = req.user!.familyId;
-  const db = getDb();
-
-  const reward = db.select().from(rewards)
-    .where(and(eq(rewards.id, id), eq(rewards.familyId, familyId)))
-    .get();
-
-  if (!reward) {
-    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Reward not found' } });
-    return;
-  }
-  if (!reward.isActive) {
-    res.status(400).json({ error: { code: 'REWARD_INACTIVE', message: 'Reward is not active' } });
-    return;
-  }
-
-  // Check current balance
-  const transactions = db.select().from(rewardTransactions)
-    .where(eq(rewardTransactions.familyId, familyId))
-    .all();
-
-  const balance = transactions.reduce((acc, row) => {
-    return row.type === 'earn' ? acc + row.amount : acc - row.amount;
-  }, 0);
-
-  if (balance < reward.starCost) {
-    res.status(400).json({
-      error: {
-        code: 'INSUFFICIENT_STARS',
-        message: `Need ${reward.starCost} stars, but balance is ${balance}`,
-      },
-    });
-    return;
-  }
-
-  const transactionId = randomUUID();
-  db.insert(rewardTransactions).values({
-    id: transactionId,
-    familyId,
-    type: 'redeem',
-    amount: reward.starCost,
-    description: `Redeemed: ${reward.title}`,
-    relatedId: id,
-    createdAt: Date.now(),
-  }).run();
-
-  res.status(201).json({
-    data: {
-      transactionId,
-      starsSpent: reward.starCost,
-      newBalance: balance - reward.starCost,
-    },
-  });
 });
 
 export default router;

@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto';
 import { getDb } from '../db';
 import { tasks, taskCompletions, rewardTransactions } from '../db/schema';
 import { requireAuth, AuthRequest } from '../middleware/auth';
+import { broadcastToFamily } from '../websocket';
 
 const router = Router();
 
@@ -25,12 +26,17 @@ router.get('/', (req: AuthRequest, res: Response) => {
 
 // POST /api/v1/tasks — create a task
 router.post('/', (req: AuthRequest, res: Response) => {
-  const { title, emoji, routine, order, starValue } = req.body as {
+  const { title, emoji, routine, routineName, order, starValue, isVisibleToChild, daysOfWeek, timeStart, timeEnd } = req.body as {
     title?: string;
     emoji?: string;
     routine?: string;
+    routineName?: string;
     order?: number;
     starValue?: number;
+    isVisibleToChild?: boolean;
+    daysOfWeek?: number[];
+    timeStart?: string;
+    timeEnd?: string;
   };
   const familyId = req.user!.familyId;
 
@@ -53,13 +59,23 @@ router.post('/', (req: AuthRequest, res: Response) => {
     title,
     emoji: emoji ?? '⭐',
     routine: routine as 'morning' | 'evening' | 'custom',
+    routineName: routineName ?? null,
     order: order ?? 0,
     starValue: starValue ?? 1,
     isActive: true,
+    isVisibleToChild: isVisibleToChild !== false,
+    daysOfWeek: daysOfWeek ? JSON.stringify(daysOfWeek) : JSON.stringify([0,1,2,3,4,5,6]),
+    timeStart: timeStart ?? null,
+    timeEnd: timeEnd ?? null,
+    focusModeEnabled: false,
     createdAt: now,
   }).run();
 
   const created = db.select().from(tasks).where(eq(tasks.id, id)).get();
+
+  // Notify child screen of new task
+  broadcastToFamily(familyId, 'child', { type: 'TASK_UPDATED', payload: { taskId: id, action: 'created' } });
+
   res.status(201).json({ data: created });
 });
 
@@ -78,13 +94,19 @@ router.patch('/:id', (req: AuthRequest, res: Response) => {
     return;
   }
 
-  const { title, emoji, routine, order, starValue, isActive } = req.body as {
+  const { title, emoji, routine, routineName, order, starValue, isActive, isVisibleToChild, daysOfWeek, timeStart, timeEnd, focusModeEnabled } = req.body as {
     title?: string;
     emoji?: string;
     routine?: string;
+    routineName?: string;
     order?: number;
     starValue?: number;
     isActive?: boolean;
+    isVisibleToChild?: boolean;
+    daysOfWeek?: number[];
+    timeStart?: string | null;
+    timeEnd?: string | null;
+    focusModeEnabled?: boolean;
   };
 
   if (routine && !['morning', 'evening', 'custom'].includes(routine)) {
@@ -97,14 +119,24 @@ router.patch('/:id', (req: AuthRequest, res: Response) => {
       ...(title !== undefined && { title }),
       ...(emoji !== undefined && { emoji }),
       ...(routine !== undefined && { routine: routine as 'morning' | 'evening' | 'custom' }),
+      ...(routineName !== undefined && { routineName }),
       ...(order !== undefined && { order }),
       ...(starValue !== undefined && { starValue }),
       ...(isActive !== undefined && { isActive }),
+      ...(isVisibleToChild !== undefined && { isVisibleToChild }),
+      ...(daysOfWeek !== undefined && { daysOfWeek: JSON.stringify(daysOfWeek) }),
+      ...(timeStart !== undefined && { timeStart }),
+      ...(timeEnd !== undefined && { timeEnd }),
+      ...(focusModeEnabled !== undefined && { focusModeEnabled }),
     })
     .where(and(eq(tasks.id, id), eq(tasks.familyId, familyId)))
     .run();
 
   const updated = db.select().from(tasks).where(eq(tasks.id, id)).get();
+
+  // Notify child screen of task change
+  broadcastToFamily(familyId, 'child', { type: 'TASK_UPDATED', payload: { taskId: id, action: 'updated' } });
+
   res.json({ data: updated });
 });
 
@@ -124,10 +156,14 @@ router.delete('/:id', (req: AuthRequest, res: Response) => {
   }
 
   db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.familyId, familyId))).run();
+
+  // Notify child screen task was removed
+  broadcastToFamily(familyId, 'child', { type: 'TASK_UPDATED', payload: { taskId: id, action: 'deleted' } });
+
   res.status(204).send();
 });
 
-// POST /api/v1/tasks/:id/complete — mark task done, award stars
+// POST /api/v1/tasks/:id/complete — parent marks a task done (for non-visible tasks)
 router.post('/:id/complete', (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const familyId = req.user!.familyId;
@@ -167,10 +203,17 @@ router.post('/:id/complete', (req: AuthRequest, res: Response) => {
     createdAt: now,
   }).run();
 
+  // Recalculate balance and broadcast to child screen
+  const txRows = db.select().from(rewardTransactions).where(eq(rewardTransactions.familyId, familyId)).all();
+  const balance = txRows.reduce((acc, r) => r.type === 'earn' ? acc + r.amount : acc - r.amount, 0);
+  broadcastToFamily(familyId, 'all', { type: 'STARS_UPDATED', payload: { balance } });
+  broadcastToFamily(familyId, 'child', { type: 'TASK_UPDATED', payload: { taskId: id, action: 'completed' } });
+
   res.status(201).json({
     data: {
       completionId,
       starsAwarded: task.starValue,
+      balance,
     },
   });
 });
