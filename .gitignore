@@ -31,3 +31,7 @@ Thumbs.db
 
 # Caddy runtime
 .caddy/
+
+# Claude Code session data
+.claude/
+package-lock.json
