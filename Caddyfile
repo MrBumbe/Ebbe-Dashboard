@@ -58,7 +58,7 @@
 		# Restrict browser features
 		Permissions-Policy "camera=(), microphone=(), geolocation=()"
 		# Strict CSP — adjust if you add external fonts/scripts
-		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss: https://api.open-meteo.com https://geocoding-api.open-meteo.com"
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' ws: wss: https://api.open-meteo.com https://geocoding-api.open-meteo.com"
 		# Hide server identity
 		-Server
 	}

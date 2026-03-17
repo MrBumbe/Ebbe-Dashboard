@@ -3,6 +3,7 @@ import QRCode from 'qrcode';
 import { useTranslation } from 'react-i18next';
 import { tw } from '../lib/theme';
 import i18n from '../i18n';
+import EbbeLogo from '../components/EbbeLogo';
 import EmojiPicker from '../components/EmojiPicker';
 
 // ── Types ─────────────────────────────────────────────────────────────────
@@ -309,7 +310,7 @@ export default function SetupWizard() {
     return (
       <WizardShell>
         <div className="text-center">
-          <div className="text-6xl mb-6">👋</div>
+          <EbbeLogo size={80} className="mx-auto mb-6" />
           <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-3">
             {t('setup.welcome.title')}
           </h1>
@@ -575,7 +576,7 @@ export default function SetupWizard() {
 
         {/* Heading */}
         <div className="text-center mb-8">
-          <div className="text-6xl mb-4">🎉</div>
+          <EbbeLogo size={48} className="mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
             {t('setup.done.title')}
           </h1>

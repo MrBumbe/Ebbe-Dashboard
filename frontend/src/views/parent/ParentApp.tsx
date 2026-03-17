@@ -17,6 +17,7 @@ import LayoutManager from './LayoutManager';
 import Users from './Users';
 import Children from './Children';
 import ChangePassword from './ChangePassword';
+import EbbeLogo from '../../components/EbbeLogo';
 
 // ── Child selector ────────────────────────────────────────────────────────────
 
@@ -339,8 +340,8 @@ export default function ParentApp() {
         {/* Logo */}
         <div className="px-4 py-5 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-2xl">⭐</span>
-            <span className="font-bold text-gray-800 dark:text-gray-100 text-lg">Ebbe</span>
+            <EbbeLogo size={28} />
+            <span className="font-brand font-bold text-gray-800 dark:text-gray-100 text-xl">Ebbe</span>
           </div>
           {/* Child selector */}
           <ChildSelector />
@@ -411,7 +412,8 @@ export default function ParentApp() {
           >
             ☰
           </button>
-          <span className="font-bold text-gray-800 dark:text-gray-100">Ebbe</span>
+          <EbbeLogo size={24} />
+          <span className="font-brand font-bold text-gray-800 dark:text-gray-100 text-lg">Ebbe</span>
         </header>
 
         <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-5xl w-full mx-auto">

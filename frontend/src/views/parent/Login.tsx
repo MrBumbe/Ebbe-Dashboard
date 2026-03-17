@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/useAuthStore';
 import { tw } from '../../lib/theme';
+import EbbeLogo from '../../components/EbbeLogo';
 
 export default function Login() {
   const { t } = useTranslation();
@@ -44,12 +45,11 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 w-full max-w-sm">
-        <div className="flex items-center gap-3 mb-8">
-          <span className="text-3xl">⭐</span>
-          <h1 className={tw.pageHeading}>Ebbe</h1>
+        <div className="flex flex-col items-center mb-8">
+          <EbbeLogo size={64} />
+          <h1 className="font-brand font-bold text-3xl text-gray-800 dark:text-gray-100 mt-3">Ebbe</h1>
+          <p className={`${tw.muted} mt-1`}>{t('parent.login.title')}</p>
         </div>
-
-        <h2 className={`text-lg font-semibold ${tw.labelMd} mb-6`}>{t('parent.login.title')}</h2>
 
         <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
           <div>

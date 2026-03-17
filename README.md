@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="frontend/public/favicon.svg" width="80" alt="Ebbe" />
+</p>
+
 # Ebbe
 
 A self-hosted family dashboard that helps children build daily routines through visual schedules, task checklists, and a reward system.

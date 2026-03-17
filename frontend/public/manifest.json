@@ -5,9 +5,9 @@
   "start_url": "/child",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#1565C0",
-  "theme_color": "#1565C0",
+  "background_color": "#F5A623",
+  "theme_color": "#F5A623",
   "icons": [
-    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
   ]
 }

@@ -5,13 +5,14 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans:  ['Inter', 'system-ui', 'sans-serif'],
+        brand: ['"Baloo 2"', 'cursive'],
       },
       colors: {
         ebbe: {
           blue:   '#1565C0',
           green:  '#2E7D32',
-          amber:  '#E65100',
+          amber:  '#F5A623',
           purple: '#4527A0',
         },
       },
