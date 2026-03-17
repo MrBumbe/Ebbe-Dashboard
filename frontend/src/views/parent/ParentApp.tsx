@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { version } from '../../../package.json';
 import { useAuthStore } from '../../store/useAuthStore';
 import client from '../../api/client';
 import Dashboard from './Dashboard';
@@ -360,6 +361,13 @@ export default function ParentApp() {
             </NavLink>
           ))}
         </nav>
+
+        {/* Copyright footer */}
+        <div className="px-4 py-2 text-center">
+          <p className="text-[10px] text-gray-400 dark:text-gray-600 leading-snug">
+            © 2026 Ebbe Dashboard Project · v{version}
+          </p>
+        </div>
 
         {/* Footer: user + logout */}
         <div className="px-3 py-4 border-t border-gray-100 dark:border-gray-700 flex flex-col gap-1">

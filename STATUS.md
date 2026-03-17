@@ -197,6 +197,14 @@ Events design (intentional):
   - `routes/setup.ts`: also inserts a default child row at setup time for new installs.
 - The existing child now appears in the Children management page with name "Child" (editable) and the same kiosk URL as before.
 
+## Session 16 additions (2026-03-17)
+
+- Switched license to MIT; created `LICENSE` file with standard MIT text
+- Updated `README.md` license section
+- Updated `CLAUDE.md` license line
+- Set `"license": "MIT"` in `backend/package.json` and `frontend/package.json`
+- Added copyright footer to parent sidebar: `© 2026 Ebbe Dashboard Project · v0.1.0` (version read from `package.json` via import)
+
 ## Session 15 additions (2026-03-17)
 
 - `healthcheck.sh` — bash health check script (Docker, API, frontend, DB latency, WebSocket)

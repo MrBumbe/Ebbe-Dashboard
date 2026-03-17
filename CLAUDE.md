@@ -7,7 +7,7 @@ Ebbe is an open-source, self-hosted family dashboard designed to help children b
 The project is modular by design (inspired by Home Assistant), privacy-first, and built to be deployable with a single `docker-compose up` command.
 
 **GitHub target:** `github.com/[user]/ebbe`
-**License:** Business Source License 1.1 (BUSL) — converts to MIT after 2 years
+**License:** MIT © 2026 Ebbe Dashboard Project
 **Future consideration:** SaaS hosting option (architecture supports it from day one)
 
 ---

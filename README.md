@@ -295,9 +295,9 @@ ebbe/
 
 ## License
 
-Business Source License 1.1 (BUSL-1.1). Free to self-host for personal and family use. Converts to MIT after 2 years.
+MIT © 2026 Ebbe Dashboard Project
 
-See [LICENSE](LICENSE) for full terms.
+Free to use, modify and distribute. See [LICENSE](LICENSE) for full terms.
 
 ---
 
