@@ -2,8 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/useAuthStore';
 import { connectParentWs } from '../../api/websocket';
+import client from '../../api/client';
 import EmojiPicker from '../../components/EmojiPicker';
 import { tw } from '../../lib/theme';
+
+interface ChildInfo {
+  id: string;
+  name: string;
+  emoji: string;
+}
 
 const PRESETS = [2, 5, 10, 15, 30];
 
@@ -19,6 +26,14 @@ export default function Timer() {
   const [active, setActive] = useState(false);
   const [connected, setConnected] = useState(false);
   const [clockTarget, setClockTarget] = useState('');
+  const [children, setChildren] = useState<ChildInfo[]>([]);
+  const [targetChildId, setTargetChildId] = useState<string>('all');
+
+  useEffect(() => {
+    client.get<{ data: ChildInfo[] }>('/children')
+      .then((res) => setChildren(res.data.data))
+      .catch(() => null);
+  }, []);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -72,18 +87,32 @@ export default function Timer() {
   function handleSend() {
     const mins = typeof minutes === 'number' ? minutes : 0;
     if (!mins || !fullLabel) return;
-    send({ type: 'TRIGGER_TIMER', payload: { seconds: mins * 60, label: fullLabel } });
+    send({
+      type: 'TRIGGER_TIMER',
+      payload: {
+        seconds: mins * 60,
+        label: fullLabel,
+        childId: targetChildId === 'all' ? null : targetChildId,
+      },
+    });
     setActive(true);
   }
 
   function handleCancel() {
-    send({ type: 'CANCEL_TIMER' });
+    send({
+      type: 'CANCEL_TIMER',
+      payload: { childId: targetChildId === 'all' ? null : targetChildId },
+    });
     setActive(false);
   }
 
   const selectedPreset = typeof minutes === 'number' && PRESETS.includes(minutes) && !customInput && !clockTarget
     ? minutes
     : null;
+
+  const targetLabel = targetChildId === 'all'
+    ? 'All children'
+    : (children.find(c => c.id === targetChildId)?.name ?? 'All children');
 
   return (
     <div>
@@ -164,6 +193,23 @@ export default function Timer() {
           </p>
         )}
 
+        {/* Send to — child selector */}
+        {children.length > 0 && (
+          <div>
+            <label className={`block ${tw.labelMd} mb-1`}>Send to</label>
+            <select
+              value={targetChildId}
+              onChange={(e) => setTargetChildId(e.target.value)}
+              className={tw.select}
+            >
+              <option value="all">All children</option>
+              {children.map(c => (
+                <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Send / Cancel */}
         <div className="flex gap-3">
           <button
@@ -171,7 +217,7 @@ export default function Timer() {
             disabled={!connected || !fullLabel || !minutes}
             className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-50"
           >
-            {t('parent.timer.send')}
+            {t('parent.timer.send')}{children.length > 0 ? ` → ${targetLabel}` : ''}
           </button>
           {active && (
             <button
