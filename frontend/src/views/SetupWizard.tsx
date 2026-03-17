@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
+import { useTranslation } from 'react-i18next';
 import { tw } from '../lib/theme';
 import i18n from '../i18n';
 import EmojiPicker from '../components/EmojiPicker';
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
+type LangCode = 'en' | 'sv' | 'fr' | 'de' | 'es' | 'nl';
 type Step = 1 | 2 | 3 | 4 | 5 | 6;
 
 interface SetupData {
@@ -14,7 +16,7 @@ interface SetupData {
   adminEmail:      string;
   adminPassword:   string;
   confirmPassword: string;
-  language:        'en' | 'sv';
+  language:        LangCode;
 }
 
 interface WizardChild {
@@ -50,9 +52,21 @@ const PRESET_COLORS = [
   { label: 'Yellow', value: '#F57F17' },
 ];
 
+// ── Language options ──────────────────────────────────────────────────────
+
+const LANGS: { code: LangCode; label: string; flag: string }[] = [
+  { code: 'en', label: 'English',    flag: '🇬🇧' },
+  { code: 'sv', label: 'Svenska',    flag: '🇸🇪' },
+  { code: 'fr', label: 'Français',   flag: '🇫🇷' },
+  { code: 'de', label: 'Deutsch',    flag: '🇩🇪' },
+  { code: 'es', label: 'Español',    flag: '🇪🇸' },
+  { code: 'nl', label: 'Nederlands', flag: '🇳🇱' },
+];
+
 // ── QR code image component ───────────────────────────────────────────────
 
 function QrCodeImg({ url, size = 200 }: { url: string; size?: number }) {
+  const { t } = useTranslation();
   const [src, setSrc] = useState<string | null>(null);
 
   useEffect(() => {
@@ -61,7 +75,7 @@ function QrCodeImg({ url, size = 200 }: { url: string; size?: number }) {
 
   if (!src) return <div style={{ width: size, height: size }} className="bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse" />;
   return (
-    <a href={url} target="_blank" rel="noreferrer" title="Open in new tab">
+    <a href={url} target="_blank" rel="noreferrer" title={t('setup.done.childScreen')}>
       <img src={src} alt={`QR code for ${url}`} width={size} height={size} className="rounded-lg border border-gray-200 dark:border-gray-600 hover:opacity-90 transition-opacity" />
     </a>
   );
@@ -75,6 +89,7 @@ function UrlField({ url, copyKey, copied, onCopy }: {
   copied:   string | null;
   onCopy:   (url: string, key: string) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center gap-2">
       <a
@@ -89,7 +104,7 @@ function UrlField({ url, copyKey, copied, onCopy }: {
         onClick={() => onCopy(url, copyKey)}
         className="shrink-0 text-xs bg-blue-600 text-white rounded-lg px-3 py-2 hover:bg-blue-700 transition-colors min-w-[56px]"
       >
-        {copied === copyKey ? '✓' : 'Copy'}
+        {copied === copyKey ? '✓' : t('setup.copy')}
       </button>
     </div>
   );
@@ -107,14 +122,15 @@ function WizardShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ── Progress bar (steps 2–5 of 5) ────────────────────────────────────────
+// ── Progress bar ──────────────────────────────────────────────────────────
 
 function ProgressBar({ step, total }: { step: number; total: number }) {
+  const { t } = useTranslation();
   const pct = Math.round(((step - 1) / total) * 100);
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-1.5">
-        <span className={tw.muted}>Step {step} of {total}</span>
+        <span className={tw.muted}>{t('setup.step', { step, total })}</span>
       </div>
       <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
         <div
@@ -129,6 +145,7 @@ function ProgressBar({ step, total }: { step: number; total: number }) {
 // ── Main component ────────────────────────────────────────────────────────
 
 export default function SetupWizard() {
+  const { t } = useTranslation();
   const [step, setStep]             = useState<Step>(1);
   const [data, setData]             = useState<SetupData>({
     familyName:      '',
@@ -161,6 +178,12 @@ export default function SetupWizard() {
     setErrors([]);
   }
 
+  function handleLanguageSelect(code: LangCode) {
+    update({ language: code });
+    // Apply immediately so the rest of the wizard reflects the chosen language
+    void i18n.changeLanguage(code);
+  }
+
   async function copyToClipboard(text: string, key: string) {
     try {
       await navigator.clipboard.writeText(text);
@@ -171,19 +194,19 @@ export default function SetupWizard() {
 
   function validateStep3(): string[] {
     const errs: string[] = [];
-    if (!data.adminName.trim())              errs.push('Name is required.');
-    if (!data.adminEmail.trim())             errs.push('Email address is required.');
-    else if (!/\S+@\S+\.\S+/.test(data.adminEmail)) errs.push('Please enter a valid email address.');
-    if (!data.adminPassword)                 errs.push('Password is required.');
-    else if (data.adminPassword.length < 8) errs.push('Password must be at least 8 characters.');
-    if (data.adminPassword !== data.confirmPassword) errs.push('Passwords do not match.');
+    if (!data.adminName.trim())              errs.push(t('setup.account.errorNameRequired'));
+    if (!data.adminEmail.trim())             errs.push(t('setup.account.errorEmailRequired'));
+    else if (!/\S+@\S+\.\S+/.test(data.adminEmail)) errs.push(t('setup.account.errorEmailInvalid'));
+    if (!data.adminPassword)                 errs.push(t('setup.account.errorPasswordRequired'));
+    else if (data.adminPassword.length < 8) errs.push(t('setup.account.errorPasswordShort'));
+    if (data.adminPassword !== data.confirmPassword) errs.push(t('setup.account.errorPasswordMismatch'));
     return errs;
   }
 
   // ── Add child to local list (step 5) ────────────────────────────────────
 
   function handleAddChild() {
-    if (!childForm.name.trim()) { setChildFormError('Name is required.'); return; }
+    if (!childForm.name.trim()) { setChildFormError(t('setup.children.nameRequired')); return; }
     setWizardChildren((prev) => [
       ...prev,
       { localId: crypto.randomUUID(), name: childForm.name.trim(), emoji: childForm.emoji, color: childForm.color },
@@ -226,7 +249,7 @@ export default function SetupWizard() {
       };
 
       if (!setupRes.ok) {
-        setSetupError(setupJson.error?.message ?? 'Setup failed. Please try again.');
+        setSetupError(setupJson.error?.message ?? t('setup.errorSetupFailed'));
         setLoading(false);
         return;
       }
@@ -242,7 +265,7 @@ export default function SetupWizard() {
 
       setStep(6);
     } catch {
-      setSetupError('Network error. Make sure the server is running and try again.');
+      setSetupError(t('setup.errorNetwork'));
     } finally {
       setLoading(false);
     }
@@ -288,16 +311,16 @@ export default function SetupWizard() {
         <div className="text-center">
           <div className="text-6xl mb-6">👋</div>
           <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-3">
-            Welcome to Ebbe!
+            {t('setup.welcome.title')}
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-xs mx-auto">
-            Let's get your family dashboard set up. It only takes a minute.
+            {t('setup.welcome.subtitle')}
           </p>
           <button
             onClick={() => setStep(2)}
             className={`${tw.btnPrimary} px-8 py-3 text-base`}
           >
-            Get started →
+            {t('setup.welcome.cta')}
           </button>
         </div>
       </WizardShell>
@@ -309,15 +332,15 @@ export default function SetupWizard() {
     return (
       <WizardShell>
         <ProgressBar step={2} total={TOTAL_STEPS} />
-        <h1 className={`${tw.pageHeading} mb-1`}>What's your family name?</h1>
-        <p className={`${tw.muted} mb-6`}>This name will appear on the dashboard.</p>
+        <h1 className={`${tw.pageHeading} mb-1`}>{t('setup.familyName.title')}</h1>
+        <p className={`${tw.muted} mb-6`}>{t('setup.familyName.hint')}</p>
         <input
           type="text"
           autoFocus
           value={data.familyName}
           onChange={(e) => update({ familyName: e.target.value })}
           onKeyDown={(e) => e.key === 'Enter' && data.familyName.trim() && setStep(3)}
-          placeholder="The Johnsons"
+          placeholder={t('setup.familyName.placeholder')}
           className={`${tw.input} w-full mb-6`}
         />
         <div className="flex justify-end">
@@ -326,7 +349,7 @@ export default function SetupWizard() {
             disabled={!data.familyName.trim()}
             className={`${tw.btnPrimary} disabled:opacity-50`}
           >
-            Next →
+            {t('setup.next')}
           </button>
         </div>
       </WizardShell>
@@ -338,45 +361,43 @@ export default function SetupWizard() {
     return (
       <WizardShell>
         <ProgressBar step={3} total={TOTAL_STEPS} />
-        <h1 className={`${tw.pageHeading} mb-1`}>Create your admin account</h1>
-        <p className={`${tw.muted} mb-6`}>
-          This will be the administrator account. You can invite other family members later.
-        </p>
+        <h1 className={`${tw.pageHeading} mb-1`}>{t('setup.account.title')}</h1>
+        <p className={`${tw.muted} mb-6`}>{t('setup.account.hint')}</p>
 
         <div className="flex flex-col gap-3 mb-4">
           <div>
-            <label className={`${tw.labelSm} block mb-1`}>Your name</label>
+            <label className={`${tw.labelSm} block mb-1`}>{t('setup.account.name')}</label>
             <input
               type="text"
               autoFocus
               value={data.adminName}
               onChange={(e) => update({ adminName: e.target.value })}
-              placeholder="Alex"
+              placeholder={t('setup.account.namePlaceholder')}
               className={`${tw.input} w-full`}
             />
           </div>
           <div>
-            <label className={`${tw.labelSm} block mb-1`}>Email address</label>
+            <label className={`${tw.labelSm} block mb-1`}>{t('setup.account.email')}</label>
             <input
               type="email"
               value={data.adminEmail}
               onChange={(e) => update({ adminEmail: e.target.value })}
-              placeholder="you@example.com"
+              placeholder={t('setup.account.emailPlaceholder')}
               className={`${tw.input} w-full`}
             />
           </div>
           <div>
-            <label className={`${tw.labelSm} block mb-1`}>Password</label>
+            <label className={`${tw.labelSm} block mb-1`}>{t('setup.account.password')}</label>
             <input
               type="password"
               value={data.adminPassword}
               onChange={(e) => update({ adminPassword: e.target.value })}
-              placeholder="At least 8 characters"
+              placeholder={t('setup.account.passwordPlaceholder')}
               className={`${tw.input} w-full`}
             />
           </div>
           <div>
-            <label className={`${tw.labelSm} block mb-1`}>Confirm password</label>
+            <label className={`${tw.labelSm} block mb-1`}>{t('setup.account.confirmPassword')}</label>
             <input
               type="password"
               value={data.confirmPassword}
@@ -387,7 +408,7 @@ export default function SetupWizard() {
                   if (errs.length === 0) setStep(4); else setErrors(errs);
                 }
               }}
-              placeholder="Repeat your password"
+              placeholder={t('setup.account.confirmPlaceholder')}
               className={`${tw.input} w-full`}
             />
           </div>
@@ -400,7 +421,7 @@ export default function SetupWizard() {
         )}
 
         <div className="flex justify-between items-center">
-          <button onClick={() => setStep(2)} className={tw.btnCancel}>← Back</button>
+          <button onClick={() => setStep(2)} className={tw.btnCancel}>{t('setup.back')}</button>
           <button
             onClick={() => {
               const errs = validateStep3();
@@ -408,7 +429,7 @@ export default function SetupWizard() {
             }}
             className={tw.btnPrimary}
           >
-            Next →
+            {t('setup.next')}
           </button>
         </div>
       </WizardShell>
@@ -417,17 +438,11 @@ export default function SetupWizard() {
 
   // Step 4 — Language
   if (step === 4) {
-    const LANGS = [
-      { code: 'en' as const, label: 'English', flag: '🇬🇧' },
-      { code: 'sv' as const, label: 'Svenska', flag: '🇸🇪' },
-    ];
     return (
       <WizardShell>
         <ProgressBar step={4} total={TOTAL_STEPS} />
-        <h1 className={`${tw.pageHeading} mb-1`}>Choose your language</h1>
-        <p className={`${tw.muted} mb-6`}>
-          This sets the language for both the parent panel and the child screen.
-        </p>
+        <h1 className={`${tw.pageHeading} mb-1`}>{t('setup.language.title')}</h1>
+        <p className={`${tw.muted} mb-6`}>{t('setup.language.hint')}</p>
 
         <div className="flex flex-col gap-3 mb-6">
           {LANGS.map((lang) => {
@@ -435,7 +450,7 @@ export default function SetupWizard() {
             return (
               <button
                 key={lang.code}
-                onClick={() => update({ language: lang.code })}
+                onClick={() => handleLanguageSelect(lang.code)}
                 className={`flex items-center gap-4 rounded-xl border-2 px-5 py-4 text-left transition-all
                   ${selected
                     ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
@@ -451,8 +466,8 @@ export default function SetupWizard() {
         </div>
 
         <div className="flex justify-between items-center">
-          <button onClick={() => setStep(3)} className={tw.btnCancel}>← Back</button>
-          <button onClick={() => setStep(5)} className={tw.btnPrimary}>Next →</button>
+          <button onClick={() => setStep(3)} className={tw.btnCancel}>{t('setup.back')}</button>
+          <button onClick={() => setStep(5)} className={tw.btnPrimary}>{t('setup.next')}</button>
         </div>
       </WizardShell>
     );
@@ -463,10 +478,8 @@ export default function SetupWizard() {
     return (
       <WizardShell>
         <ProgressBar step={5} total={TOTAL_STEPS} />
-        <h1 className={`${tw.pageHeading} mb-1`}>Add your children</h1>
-        <p className={`${tw.muted} mb-5`}>
-          Add at least one child to get started. You can always add more later from the parent panel.
-        </p>
+        <h1 className={`${tw.pageHeading} mb-1`}>{t('setup.children.title')}</h1>
+        <p className={`${tw.muted} mb-5`}>{t('setup.children.hint')}</p>
 
         {/* Added children list */}
         {wizardChildren.length > 0 && (
@@ -483,7 +496,7 @@ export default function SetupWizard() {
                   onClick={() => handleRemoveChild(child.localId)}
                   className="text-xs text-red-400 hover:text-red-600 px-2 py-1 rounded"
                 >
-                  Remove
+                  {t('setup.children.remove')}
                 </button>
               </li>
             ))}
@@ -492,7 +505,7 @@ export default function SetupWizard() {
 
         {/* Inline add-child form */}
         <div className={`${tw.formCard} mb-5`}>
-          <p className={`text-xs font-semibold ${tw.secondary} uppercase tracking-wide`}>Add a child</p>
+          <p className={`text-xs font-semibold ${tw.secondary} uppercase tracking-wide`}>{t('setup.children.addLabel')}</p>
           <div className="flex gap-2 items-center">
             <EmojiPicker
               value={childForm.emoji}
@@ -500,7 +513,7 @@ export default function SetupWizard() {
             />
             <input
               type="text"
-              placeholder="Child's name"
+              placeholder={t('setup.children.namePlaceholder')}
               value={childForm.name}
               onChange={(e) => { setChildForm((f) => ({ ...f, name: e.target.value })); setChildFormError(''); }}
               onKeyDown={(e) => e.key === 'Enter' && handleAddChild()}
@@ -527,7 +540,7 @@ export default function SetupWizard() {
               onClick={handleAddChild}
               className={tw.btnPrimary}
             >
-              + Add child
+              {t('setup.children.addButton')}
             </button>
           </div>
         </div>
@@ -539,13 +552,13 @@ export default function SetupWizard() {
         )}
 
         <div className="flex justify-between items-center">
-          <button onClick={() => setStep(4)} className={tw.btnCancel}>← Back</button>
+          <button onClick={() => setStep(4)} className={tw.btnCancel}>{t('setup.back')}</button>
           <button
             onClick={() => void handleFinish()}
             disabled={loading || wizardChildren.length === 0}
             className={`${tw.btnPrimary} disabled:opacity-50 min-w-[140px]`}
           >
-            {loading ? 'Setting up…' : 'Next →'}
+            {loading ? t('setup.children.submitting') : t('setup.next')}
           </button>
         </div>
       </WizardShell>
@@ -564,10 +577,10 @@ export default function SetupWizard() {
         <div className="text-center mb-8">
           <div className="text-6xl mb-4">🎉</div>
           <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-            Ebbe is ready!
+            {t('setup.done.title')}
           </h1>
           <p className={tw.secondary}>
-            Here are the links you'll need. Scan the QR code with the child's device or copy the URL.
+            {t('setup.done.hint')}
           </p>
         </div>
 
@@ -584,7 +597,7 @@ export default function SetupWizard() {
                   <span className="text-3xl">{child.emoji}</span>
                   <div>
                     <p className="font-semibold text-gray-800 dark:text-gray-100">{child.name}</p>
-                    <p className={tw.muted}>📱 Child screen</p>
+                    <p className={tw.muted}>{t('setup.done.childScreen')}</p>
                   </div>
                 </div>
 
@@ -599,7 +612,9 @@ export default function SetupWizard() {
                   <div className="flex-1 flex flex-col gap-3 min-w-0">
                     {shortUrl && (
                       <div>
-                        <p className={`${tw.labelSm} mb-1`}>Short URL <span className="text-gray-400">(easy to type)</span></p>
+                        <p className={`${tw.labelSm} mb-1`}>
+                          {t('setup.done.shortUrl')} <span className="text-gray-400">{t('setup.done.shortUrlNote')}</span>
+                        </p>
                         <UrlField
                           url={shortUrl}
                           copyKey={`short-${child.id}`}
@@ -609,7 +624,9 @@ export default function SetupWizard() {
                       </div>
                     )}
                     <div>
-                      <p className={`${tw.labelSm} mb-1`}>Full URL <span className="text-gray-400">(most secure)</span></p>
+                      <p className={`${tw.labelSm} mb-1`}>
+                        {t('setup.done.fullUrl')} <span className="text-gray-400">{t('setup.done.fullUrlNote')}</span>
+                      </p>
                       <UrlField
                         url={fullUrl}
                         copyKey={`full-${child.id}`}
@@ -619,7 +636,7 @@ export default function SetupWizard() {
                     </div>
                     {shortUrl && (
                       <p className={tw.muted}>
-                        The short URL is convenient on your local network. The full URL works everywhere.
+                        {t('setup.done.urlExplanation')}
                       </p>
                     )}
                   </div>
@@ -631,7 +648,7 @@ export default function SetupWizard() {
 
         {/* Parent panel URL */}
         <div className={`bg-gray-50 dark:bg-gray-700 rounded-xl p-4 mb-6`}>
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">👨‍👩‍👧 Parent panel</p>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">{t('setup.done.parentPanel')}</p>
           <UrlField
             url={`http://${primaryAddr}/parent`}
             copyKey="parent"
@@ -642,22 +659,20 @@ export default function SetupWizard() {
 
         {multipleAddresses && (
           <p className={`${tw.muted} mb-6 text-center`}>
-            Multiple network addresses found ({addresses.join(', ')}). Try opening the links from your
-            phone or tablet on the same Wi‑Fi — the right one will load Ebbe straight away.
+            {t('setup.done.multipleAddresses', { addresses: addresses.join(', ') })}
           </p>
         )}
 
         {/* Reassuring note */}
         <p className={`${tw.muted} mb-6 text-center`}>
-          Don't worry about saving these links right now — you can always find them later in the
-          Children section of the parent panel.
+          {t('setup.done.findLater')}
         </p>
 
         <button
           onClick={() => void handleOpenParentPanel()}
           className={`${tw.btnPrimary} w-full py-3 text-base`}
         >
-          Open parent panel →
+          {t('setup.done.openPanel')}
         </button>
       </div>
     </div>

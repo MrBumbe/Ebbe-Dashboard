@@ -1,6 +1,6 @@
 # Ebbe — Build Status
 
-Last updated: 2026-03-17 (session 20)
+Last updated: 2026-03-17 (session 21)
 
 ---
 
@@ -59,7 +59,7 @@ Last updated: 2026-03-17 (session 20)
 | Area | Status | Notes |
 |---|---|---|
 | Vite + React + Tailwind setup | ✅ Done | |
-| i18n setup (sv + en) | ✅ Done | All new strings added |
+| i18n setup (en + sv + fr + de + es + nl) | ✅ Done | All strings i18n; 4 community language files added |
 | `api/client.ts` | ✅ Done | axios + JWT refresh |
 | `api/child.ts` | ✅ Done | fetch + childToken; all new endpoints |
 | `api/websocket.ts` | ✅ Done | WS client; all new message types |
@@ -77,7 +77,7 @@ Last updated: 2026-03-17 (session 20)
 | `views/child/WeekSchedule.tsx` | ✅ Done | Starts from today; compact mode |
 | `views/child/UpcomingEvent.tsx` | ✅ Done | Countdown in days |
 | `views/child/TimerAlert.tsx` | ✅ Done | Fullscreen / minimized bar; Web Audio chime |
-| `views/SetupWizard.tsx` | ✅ Done | 5+1 step wizard: welcome, family name, admin account, language, children, success+QR+URLs |
+| `views/SetupWizard.tsx` | ✅ Done | 5+1 step wizard: welcome, family name, admin account, language (6 langs), children, success+QR+URLs; fully i18n |
 | `views/parent/Login.tsx` | ✅ Done | |
 | `views/parent/ParentApp.tsx` | ✅ Done | Sidebar nav + Layout entry |
 | `views/parent/Dashboard.tsx` | ✅ Done | |
@@ -199,6 +199,32 @@ Events design (intentional):
   - `db/index.ts`: startup fixup — after migrations, any family with no `children` rows gets a default child record created using `families.childToken`. Runs once and is idempotent.
   - `routes/setup.ts`: also inserts a default child row at setup time for new installs.
 - The existing child now appears in the Children management page with name "Child" (editable) and the same kiosk URL as before.
+
+## Session 21 additions (2026-03-17)
+
+**i18n audit + community language files (fr/de/es/nl):**
+
+**Fix 1 — i18n audit:**
+- `SetupWizard.tsx`: fully i18n-ized — all hardcoded English strings replaced with `t()` calls. Added `useTranslation`. Language selection in step 4 now immediately calls `i18n.changeLanguage()` so the rest of the wizard adapts in real time.
+- `Children.tsx`: "Show QR" / "Hide QR" toggle and scan note now use `t('parent.children.showQr')`, `t('parent.children.hideQr')`, `t('parent.children.qrHint')`; Cancel button in ChildForm now uses `t('parent.children.cancel')`.
+- `Settings.tsx`: weather section (title, hint, saved message, placeholder, search button, not-found error, save error) and colour section (title, hint, saved message) all converted to `t()`. `featuresSaved` message also converted.
+- New i18n keys in `en.json` + `sv.json`: `setup.*` (all wizard strings), `parent.children.{cancel,showQr,hideQr,qrHint}`, `parent.settings.{weatherTitle,weatherHint,weatherSaved,weatherPlaceholder,weatherSearch,weatherNotFound,weatherSaveError,colourTitle,colourHint,colourSaved,saved}`.
+
+**Fix 2 — Community language files:**
+- `frontend/src/locales/fr.json` — French 🇫🇷 (complete translation)
+- `frontend/src/locales/de.json` — German 🇩🇪 (complete translation)
+- `frontend/src/locales/es.json` — Spanish 🇪🇸 (complete translation)
+- `frontend/src/locales/nl.json` — Dutch 🇳🇱 (complete translation)
+- `frontend/src/i18n.ts`: imports all 6 locale files; validates stored lang against supported list before using it.
+- `SetupWizard.tsx` language step: expanded from 2 to 6 language options (en, sv, fr, de, es, nl). `LANGS` array with flag, code, and native label.
+- `Settings.tsx` language selector: expanded from 2-button row to 6-button flex-wrap row using the same language list.
+- `backend/src/routes/setup.ts`: `lang` validation now accepts all 6 language codes (previously only `'sv'` was accepted; everything else fell back to `'en'`).
+
+**Fix 3 — Short/full URL explanation text:**
+- `SetupWizard.tsx` done screen: replaced "The short URL is convenient on your local network. The full URL works everywhere." with `t('setup.done.urlExplanation')` = "The short URL is easier to type on your local network. The full URL contains the complete security token."
+
+**Fix 4 — README translations note:**
+- `README.md`: updated "Multi-language" feature row to list all 6 languages; expanded Contributing section with a `### Translations` subsection explaining the AI-generated community translations and how to add a new language.
 
 ## Session 20 additions (2026-03-17)
 

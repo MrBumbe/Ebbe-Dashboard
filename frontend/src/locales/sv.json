@@ -170,7 +170,11 @@
       "copied":         "Kopierat!",
       "manage":         "Hantera barn…",
       "tokenHint":      "Varje barn får sin egen kiosk-URL. Använd den i Fully Kiosk Browser eller valfri surfplattebrowser.",
-      "confirmDelete":  "Ta bort {{name}}?"
+      "confirmDelete":  "Ta bort {{name}}?",
+      "cancel":         "Avbryt",
+      "showQr":         "Visa QR",
+      "hideQr":         "Dölj QR",
+      "qrHint":         "Skanna med barnets enhet eller Fully Kiosk Browser."
     },
     "join": {
       "title":            "Skapa ditt konto",
@@ -214,8 +218,83 @@
       "childFeaturesHint":  "Aktivera eller inaktivera valfria funktioner på barnets skärm.",
       "storeEnabled":       "Stjärnaffär",
       "historyEnabled":     "Stjärnhistorik",
-      "inactivitySeconds":  "Inaktivitetstimeout (sekunder)"
+      "inactivitySeconds":  "Inaktivitetstimeout (sekunder)",
+      "weatherTitle":       "Väderplats",
+      "weatherHint":        "Sök efter en stad för att ange väderlokalisering på barnets skärm.",
+      "weatherSaved":       "✓ Sparad: {{name}}",
+      "weatherPlaceholder": "t.ex. Göteborg",
+      "weatherSearch":      "Sök",
+      "weatherNotFound":    "Inga platser hittades. Prova ett annat stadsnamn.",
+      "weatherSaveError":   "Det gick inte att spara platsen. Försök igen.",
+      "colourTitle":        "Barnets skärmfärgstema",
+      "colourHint":         "Välj en accentfärg för barnets instrumentpanel.",
+      "colourSaved":        "✓ Färg sparad",
+      "saved":              "✓ Sparad"
     }
+  },
+  "setup": {
+    "step":     "Steg {{step}} av {{total}}",
+    "back":     "← Tillbaka",
+    "next":     "Nästa →",
+    "copy":     "Kopiera",
+    "welcome": {
+      "title":    "Välkommen till Ebbe!",
+      "subtitle": "Låt oss sätta upp din familjeinstrumentpanel. Det tar bara en minut.",
+      "cta":      "Kom igång →"
+    },
+    "familyName": {
+      "title":       "Vad heter er familj?",
+      "hint":        "Det här namnet visas på instrumentpanelen.",
+      "placeholder": "Familjen Lindgren"
+    },
+    "account": {
+      "title":               "Skapa ditt administratörskonto",
+      "hint":                "Det här blir administratörskontot. Du kan bjuda in andra familjemedlemmar senare.",
+      "name":                "Ditt namn",
+      "namePlaceholder":     "Alex",
+      "email":               "E-postadress",
+      "emailPlaceholder":    "du@exempel.se",
+      "password":            "Lösenord",
+      "passwordPlaceholder": "Minst 8 tecken",
+      "confirmPassword":     "Bekräfta lösenord",
+      "confirmPlaceholder":  "Upprepa ditt lösenord",
+      "errorNameRequired":   "Namn krävs.",
+      "errorEmailRequired":  "E-postadress krävs.",
+      "errorEmailInvalid":   "Ange en giltig e-postadress.",
+      "errorPasswordRequired": "Lösenord krävs.",
+      "errorPasswordShort":  "Lösenordet måste vara minst 8 tecken.",
+      "errorPasswordMismatch": "Lösenorden matchar inte."
+    },
+    "language": {
+      "title": "Välj ditt språk",
+      "hint":  "Det här anger språket för både föräldrapanelen och barnets skärm."
+    },
+    "children": {
+      "title":           "Lägg till dina barn",
+      "hint":            "Lägg till minst ett barn för att komma igång. Du kan alltid lägga till fler senare från föräldrapanelen.",
+      "remove":          "Ta bort",
+      "addLabel":        "Lägg till ett barn",
+      "namePlaceholder": "Barnets namn",
+      "nameRequired":    "Namn krävs.",
+      "addButton":       "+ Lägg till barn",
+      "submitting":      "Konfigurerar…"
+    },
+    "done": {
+      "title":             "Ebbe är redo!",
+      "hint":              "Här är länkarna du behöver. Skanna QR-koden med barnets enhet eller kopiera URL:en.",
+      "childScreen":       "📱 Barnets skärm",
+      "shortUrl":          "Kort URL",
+      "shortUrlNote":      "(enkel att skriva)",
+      "fullUrl":           "Fullständig URL",
+      "fullUrlNote":       "(mest säker)",
+      "urlExplanation":    "Den korta URL:en är lättare att skriva på ditt lokala nätverk. Den fullständiga URL:en innehåller den kompletta säkerhetstoken.",
+      "parentPanel":       "👨‍👩‍👧 Föräldrapanel",
+      "multipleAddresses": "Flera nätverksadresser hittades ({{addresses}}). Försök öppna länkarna från din telefon eller surfplatta i samma Wi‑Fi — rätt adress laddar Ebbe direkt.",
+      "findLater":         "Oroa dig inte för att spara dessa länkar nu — du hittar dem alltid senare i Barn-avsnittet i föräldrapanelen.",
+      "openPanel":         "Öppna föräldrapanelen →"
+    },
+    "errorSetupFailed": "Installationen misslyckades. Försök igen.",
+    "errorNetwork":     "Nätverksfel. Kontrollera att servern körs och försök igen."
   },
   "errors": {
     "networkError": "Kunde inte nå servern. Kontrollera anslutningen.",

@@ -170,7 +170,11 @@
       "copied":         "Copied!",
       "manage":         "Manage children…",
       "tokenHint":      "Each child gets their own kiosk URL. Use this in Fully Kiosk Browser or any tablet browser.",
-      "confirmDelete":  "Remove {{name}}?"
+      "confirmDelete":  "Remove {{name}}?",
+      "cancel":         "Cancel",
+      "showQr":         "Show QR",
+      "hideQr":         "Hide QR",
+      "qrHint":         "Scan with the child's device or Fully Kiosk Browser."
     },
     "join": {
       "title":            "Create your account",
@@ -214,8 +218,83 @@
       "childFeaturesHint":  "Enable or disable optional features on the child screen.",
       "storeEnabled":       "Star store",
       "historyEnabled":     "Star history",
-      "inactivitySeconds":  "Inactivity timeout (seconds)"
+      "inactivitySeconds":  "Inactivity timeout (seconds)",
+      "weatherTitle":       "Weather location",
+      "weatherHint":        "Search for a city to set the weather location on the child screen.",
+      "weatherSaved":       "✓ Saved: {{name}}",
+      "weatherPlaceholder": "e.g. Stockholm",
+      "weatherSearch":      "Search",
+      "weatherNotFound":    "No locations found. Try a different city name.",
+      "weatherSaveError":   "Failed to save location. Please try again.",
+      "colourTitle":        "Child screen colour theme",
+      "colourHint":         "Choose an accent colour for the child's dashboard.",
+      "colourSaved":        "✓ Colour saved",
+      "saved":              "✓ Saved"
     }
+  },
+  "setup": {
+    "step":     "Step {{step}} of {{total}}",
+    "back":     "← Back",
+    "next":     "Next →",
+    "copy":     "Copy",
+    "welcome": {
+      "title":    "Welcome to Ebbe!",
+      "subtitle": "Let's get your family dashboard set up. It only takes a minute.",
+      "cta":      "Get started →"
+    },
+    "familyName": {
+      "title":       "What's your family name?",
+      "hint":        "This name will appear on the dashboard.",
+      "placeholder": "The Johnsons"
+    },
+    "account": {
+      "title":               "Create your admin account",
+      "hint":                "This will be the administrator account. You can invite other family members later.",
+      "name":                "Your name",
+      "namePlaceholder":     "Alex",
+      "email":               "Email address",
+      "emailPlaceholder":    "you@example.com",
+      "password":            "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "confirmPassword":     "Confirm password",
+      "confirmPlaceholder":  "Repeat your password",
+      "errorNameRequired":   "Name is required.",
+      "errorEmailRequired":  "Email address is required.",
+      "errorEmailInvalid":   "Please enter a valid email address.",
+      "errorPasswordRequired": "Password is required.",
+      "errorPasswordShort":  "Password must be at least 8 characters.",
+      "errorPasswordMismatch": "Passwords do not match."
+    },
+    "language": {
+      "title": "Choose your language",
+      "hint":  "This sets the language for both the parent panel and the child screen."
+    },
+    "children": {
+      "title":           "Add your children",
+      "hint":            "Add at least one child to get started. You can always add more later from the parent panel.",
+      "remove":          "Remove",
+      "addLabel":        "Add a child",
+      "namePlaceholder": "Child's name",
+      "nameRequired":    "Name is required.",
+      "addButton":       "+ Add child",
+      "submitting":      "Setting up…"
+    },
+    "done": {
+      "title":             "Ebbe is ready!",
+      "hint":              "Here are the links you'll need. Scan the QR code with the child's device or copy the URL.",
+      "childScreen":       "📱 Child screen",
+      "shortUrl":          "Short URL",
+      "shortUrlNote":      "(easy to type)",
+      "fullUrl":           "Full URL",
+      "fullUrlNote":       "(most secure)",
+      "urlExplanation":    "The short URL is easier to type on your local network. The full URL contains the complete security token.",
+      "parentPanel":       "👨‍👩‍👧 Parent panel",
+      "multipleAddresses": "Multiple network addresses found ({{addresses}}). Try opening the links from your phone or tablet on the same Wi‑Fi — the right one will load Ebbe straight away.",
+      "findLater":         "Don't worry about saving these links right now — you can always find them later in the Children section of the parent panel.",
+      "openPanel":         "Open parent panel →"
+    },
+    "errorSetupFailed": "Setup failed. Please try again.",
+    "errorNetwork":     "Network error. Make sure the server is running and try again."
   },
   "errors": {
     "networkError": "Could not reach the server. Check your connection.",

@@ -1,0 +1,303 @@
+{
+  "appName": "Ebbe",
+  "loading": "Laden...",
+  "child": {
+    "goodMorning": "Goedemorgen!",
+    "goodEvening": "Goedenavond!",
+    "tasks": {
+      "morning": "Ochtendroutine",
+      "evening": "Avondroutine",
+      "custom":  "Aangepaste routine",
+      "allDone": "Goed gedaan! Alles klaar! 🎉",
+      "progress": "{{done}} van {{total}} klaar"
+    },
+    "mood": {
+      "prompt": "Hoe voel je je?",
+      "happy":   "Blij",
+      "okay":    "Oké",
+      "sad":     "Verdrietig",
+      "angry":   "Boos",
+      "tired":   "Moe",
+      "excited": "Enthousiast",
+      "anxious": "Angstig",
+      "logged":  "Stemming opgeslagen!",
+      "cooldownSoon": "Je kunt binnenkort weer inchecken.",
+      "cooldownMinutes": "Volgende check-in over {{minutes}} min."
+    },
+    "stars": {
+      "label": "Sterren",
+      "balance": "Je hebt {{count}} sterren!",
+      "tapToOpen": "Tik om de winkel of het overzicht te openen"
+    },
+    "store": {
+      "title":     "Sterrenwinkel",
+      "balance":   "Jouw saldo: {{count}} ⭐",
+      "want":      "Ik wil dit!",
+      "requested": "Aangevraagd ✓",
+      "empty":     "Nu geen beloningen beschikbaar.",
+      "autoClose": "Sluit over {{seconds}}s"
+    },
+    "history": {
+      "title":     "Sterrengeschiedenis",
+      "empty":     "Nog geen transacties.",
+      "autoClose": "Sluit over {{seconds}}s"
+    },
+    "timer": {
+      "label": "Over {{minutes}} min: {{activity}}"
+    },
+    "schedule": {
+      "title": "Deze week",
+      "days": {
+        "0": "Maandag",
+        "1": "Dinsdag",
+        "2": "Woensdag",
+        "3": "Donderdag",
+        "4": "Vrijdag",
+        "5": "Zaterdag",
+        "6": "Zondag"
+      }
+    },
+    "event": {
+      "daysLeft_one":   "Over {{count}} dag: {{title}}",
+      "daysLeft_other": "Over {{count}} dagen: {{title}}",
+      "today": "Vandaag: {{title}}! 🎉"
+    }
+  },
+  "parent": {
+    "nav": {
+      "dashboard": "Overzicht",
+      "tasks":     "Taken",
+      "schedule":  "Schema",
+      "events":    "Evenementen",
+      "rewards":   "Beloningen",
+      "mood":      "Stemmingslogboek",
+      "timer":     "Timer",
+      "layout":    "Indeling",
+      "children":  "Kinderen",
+      "settings":  "Instellingen",
+      "users":     "Gebruikers",
+      "logout":    "Uitloggen"
+    },
+    "login": {
+      "title":    "Inloggen",
+      "email":    "E-mailadres",
+      "password": "Wachtwoord",
+      "submit":   "Inloggen",
+      "error":    "Onjuist e-mailadres of wachtwoord"
+    },
+    "tasks": {
+      "title":                "Routinetaken",
+      "add":                  "Taak toevoegen",
+      "morning":              "Ochtend",
+      "evening":              "Avond",
+      "customRoutine":        "Aangepaste routine",
+      "createNewRoutine":     "Nieuwe routine maken",
+      "routineNamePlaceholder": "Routinenaam",
+      "titlePlaceholder":     "Taaknaam",
+      "starValue":            "Sterren",
+      "visibleToChild":       "Zichtbaar voor kind",
+      "activeDays":           "Actieve dagen",
+      "timeFrom":             "Van",
+      "timeTo":               "Tot",
+      "timeHint":             "De taak verschijnt 2 uur voor de begintijd.",
+      "save":                 "Opslaan",
+      "delete":               "Verwijderen"
+    },
+    "rewards": {
+      "title":              "Beloningen",
+      "balance":            "Saldo: {{count}} ⭐",
+      "add":                "Beloning toevoegen",
+      "redeem":             "Inwisselen",
+      "starCost":           "Sterren",
+      "pendingRequests":    "Openstaande verzoeken",
+      "approve":            "Goedkeuren",
+      "deny":               "Weigeren",
+      "manualAdjust":       "Handmatige sterren-aanpassing",
+      "adjustAmount":       "Bedrag",
+      "adjustDescription":  "Beschrijving",
+      "adjustSubmit":       "Toepassen"
+    },
+    "timer": {
+      "title":   "Waarschuwing sturen",
+      "minutes": "Minuten",
+      "label":   "Activiteit (bijv. Avondeten)",
+      "send":    "Stuur naar scherm",
+      "cancel":  "Timer annuleren"
+    },
+    "schedule": {
+      "addItem":      "Item toevoegen",
+      "editItem":     "Item bewerken",
+      "titlePlaceholder": "Titel",
+      "recurring":    "Elke week herhalen",
+      "specificDate": "Specifieke datum (eenmalig)",
+      "annualDate":   "Jaarlijkse datum",
+      "clearDate":    "Weekdag gebruiken"
+    },
+    "layout": {
+      "title": "Indeling kinderscherm",
+      "hint":  "Widgets op het kinderscherm in- of uitschakelen en herordenen.",
+      "page":  "Pagina {{number}}"
+    },
+    "users": {
+      "title":              "Gebruikersbeheer",
+      "familyName":         "Familienaam",
+      "members":            "Familieleden",
+      "edit":               "Bewerken",
+      "roleAdmin":          "Ouder",
+      "roleParent":         "Familielid",
+      "roleTitlePlaceholder": "Aangepaste roltitel (optioneel)",
+      "mustChangePassword": "Moet wachtwoord wijzigen",
+      "inviteNew":          "Nieuwe gebruiker uitnodigen",
+      "inviteRole":         "Rol",
+      "generateLink":       "Uitnodigingslink genereren",
+      "inviteLinkReady":    "Uitnodigingslink klaar — deel handmatig:",
+      "inviteExpires":      "Verloopt: {{time}}",
+      "confirmDelete":      "Gebruiker {{name}} verwijderen?",
+      "resetPassword":      "Wachtwoord opnieuw instellen…",
+      "tempPasswordLabel":  "Tijdelijk wachtwoord (veilig delen):",
+      "tempPasswordHint":   "De gebruiker moet dit bij de volgende login wijzigen.",
+      "namePlaceholder":    "Weergavenaam",
+      "phonePlaceholder":   "Telefoonnummer"
+    },
+    "children": {
+      "title":          "Kinderen",
+      "add":            "Kind toevoegen",
+      "empty":          "Nog geen kinderen toegevoegd.",
+      "namePlaceholder": "Naam van het kind",
+      "birthdate":      "Geboortedatum",
+      "born":           "Geboren",
+      "copy":           "URL kopiëren",
+      "copied":         "Gekopieerd!",
+      "manage":         "Kinderen beheren…",
+      "tokenHint":      "Elk kind heeft zijn eigen kiosk-URL. Gebruik dit in Fully Kiosk Browser of een browser op een tablet.",
+      "confirmDelete":  "{{name}} verwijderen?",
+      "cancel":         "Annuleren",
+      "showQr":         "QR tonen",
+      "hideQr":         "QR verbergen",
+      "qrHint":         "Scan met het apparaat van het kind of Fully Kiosk Browser."
+    },
+    "join": {
+      "title":            "Account aanmaken",
+      "subtitle":         "Je bent uitgenodigd om lid te worden van een familie op Ebbe.",
+      "name":             "Jouw naam",
+      "phone":            "Telefoonnummer (optioneel)",
+      "phonePlaceholder": "bijv. +31 6 12345678",
+      "confirmPassword":  "Wachtwoord bevestigen",
+      "submit":           "Account aanmaken",
+      "invalidToken":     "Deze uitnodigingslink is ongeldig of ontbreekt.",
+      "tokenExpired":     "Deze uitnodigingslink is verlopen. Vraag om een nieuwe.",
+      "tokenUsed":        "Deze uitnodigingslink is al gebruikt.",
+      "emailTaken":       "Er bestaat al een account met dat e-mailadres.",
+      "passwordMismatch": "Wachtwoorden komen niet overeen."
+    },
+    "changePassword": {
+      "title":        "Wachtwoord wijzigen",
+      "subtitle":     "Een beheerder heeft je wachtwoord gereset. Stel een nieuw in voordat je verdergaat.",
+      "current":      "Huidig (tijdelijk) wachtwoord",
+      "new":          "Nieuw wachtwoord",
+      "submit":       "Nieuw wachtwoord instellen",
+      "wrongCurrent": "Het huidige wachtwoord is onjuist."
+    },
+    "profile": {
+      "title":        "Jouw profiel",
+      "info":         "Accountinformatie",
+      "role":         "Rol",
+      "appearance":   "Uiterlijk",
+      "darkMode":     "Donkere modus",
+      "adminSection": "Beheer",
+      "saved":        "Opgeslagen"
+    },
+    "settings": {
+      "title":              "Instellingen",
+      "language":           "Taal",
+      "mood":               "Actieve stemmingstypen",
+      "ai":                 "AI-assistent",
+      "aiOn":               "Ingeschakeld",
+      "aiOff":              "Uitgeschakeld",
+      "childFeatures":      "Functies kinderscherm",
+      "childFeaturesHint":  "Optionele functies op het kinderscherm in- of uitschakelen.",
+      "storeEnabled":       "Sterrenwinkel",
+      "historyEnabled":     "Sterrengeschiedenis",
+      "inactivitySeconds":  "Inactivity-timeout (seconden)",
+      "weatherTitle":       "Weerlocatie",
+      "weatherHint":        "Zoek een stad om de weerlocatie op het kinderscherm in te stellen.",
+      "weatherSaved":       "✓ Opgeslagen: {{name}}",
+      "weatherPlaceholder": "bijv. Amsterdam",
+      "weatherSearch":      "Zoeken",
+      "weatherNotFound":    "Geen locaties gevonden. Probeer een andere plaatsnaam.",
+      "weatherSaveError":   "Locatie opslaan mislukt. Probeer het opnieuw.",
+      "colourTitle":        "Kleurthema kinderscherm",
+      "colourHint":         "Kies een accentkleur voor het dashboard van het kind.",
+      "colourSaved":        "✓ Kleur opgeslagen",
+      "saved":              "✓ Opgeslagen"
+    }
+  },
+  "setup": {
+    "step":     "Stap {{step}} van {{total}}",
+    "back":     "← Terug",
+    "next":     "Volgende →",
+    "copy":     "Kopiëren",
+    "welcome": {
+      "title":    "Welkom bij Ebbe!",
+      "subtitle": "Laten we je familiepaneel instellen. Het duurt maar een minuutje.",
+      "cta":      "Aan de slag →"
+    },
+    "familyName": {
+      "title":       "Wat is de naam van jullie familie?",
+      "hint":        "Deze naam verschijnt op het dashboard.",
+      "placeholder": "Familie De Vries"
+    },
+    "account": {
+      "title":               "Beheerdersaccount aanmaken",
+      "hint":                "Dit wordt het beheerdersaccount. Je kunt later andere familieleden uitnodigen.",
+      "name":                "Jouw naam",
+      "namePlaceholder":     "Alex",
+      "email":               "E-mailadres",
+      "emailPlaceholder":    "jij@voorbeeld.nl",
+      "password":            "Wachtwoord",
+      "passwordPlaceholder": "Minimaal 8 tekens",
+      "confirmPassword":     "Wachtwoord bevestigen",
+      "confirmPlaceholder":  "Herhaal je wachtwoord",
+      "errorNameRequired":   "Naam is verplicht.",
+      "errorEmailRequired":  "E-mailadres is verplicht.",
+      "errorEmailInvalid":   "Voer een geldig e-mailadres in.",
+      "errorPasswordRequired": "Wachtwoord is verplicht.",
+      "errorPasswordShort":  "Wachtwoord moet minimaal 8 tekens bevatten.",
+      "errorPasswordMismatch": "Wachtwoorden komen niet overeen."
+    },
+    "language": {
+      "title": "Kies je taal",
+      "hint":  "Dit stelt de taal in voor zowel het ouderpaneel als het kinderscherm."
+    },
+    "children": {
+      "title":           "Kinderen toevoegen",
+      "hint":            "Voeg minimaal één kind toe om te beginnen. Je kunt later meer toevoegen vanuit het ouderpaneel.",
+      "remove":          "Verwijderen",
+      "addLabel":        "Kind toevoegen",
+      "namePlaceholder": "Naam van het kind",
+      "nameRequired":    "Naam is verplicht.",
+      "addButton":       "+ Kind toevoegen",
+      "submitting":      "Instellen…"
+    },
+    "done": {
+      "title":             "Ebbe is klaar!",
+      "hint":              "Hier zijn de links die je nodig hebt. Scan de QR-code met het apparaat van het kind of kopieer de URL.",
+      "childScreen":       "📱 Kinderscherm",
+      "shortUrl":          "Korte URL",
+      "shortUrlNote":      "(makkelijk in te typen)",
+      "fullUrl":           "Volledige URL",
+      "fullUrlNote":       "(veiliger)",
+      "urlExplanation":    "De korte URL is makkelijker in te typen op je lokale netwerk. De volledige URL bevat het complete beveiligingstoken.",
+      "parentPanel":       "👨‍👩‍👧 Ouderpaneel",
+      "multipleAddresses": "Meerdere netwerkadressen gevonden ({{addresses}}). Probeer de links te openen van je telefoon of tablet op hetzelfde Wi‑Fi — het juiste adres laadt Ebbe direct.",
+      "findLater":         "Maak je geen zorgen over het opslaan van deze links — je kunt ze altijd later terugvinden in het gedeelte Kinderen van het ouderpaneel.",
+      "openPanel":         "Ouderpaneel openen →"
+    },
+    "errorSetupFailed": "Instellen mislukt. Probeer het opnieuw.",
+    "errorNetwork":     "Netwerkfout. Zorg dat de server actief is en probeer het opnieuw."
+  },
+  "errors": {
+    "networkError": "Kan de server niet bereiken. Controleer je verbinding.",
+    "unknown":      "Er ging iets mis. Probeer het opnieuw."
+  }
+}

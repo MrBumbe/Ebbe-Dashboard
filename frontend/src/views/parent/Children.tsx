@@ -106,7 +106,7 @@ function ChildForm({ form, onChange, onSubmit, submitLabel, onCancel }: ChildFor
         />
       </div>
       <div className="flex gap-2 justify-end">
-        <button type="button" onClick={onCancel} className={tw.btnCancel}>Cancel</button>
+        <button type="button" onClick={onCancel} className={tw.btnCancel}>{t('parent.children.cancel')}</button>
         <button type="submit" className={tw.btnPrimary}>{submitLabel}</button>
       </div>
     </form>
@@ -275,7 +275,7 @@ export default function Children() {
                       className={`text-xs px-2 py-1 rounded transition-colors bg-white dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500 border border-gray-200 dark:border-gray-500`}
                       title="Show QR code"
                     >
-                      {qrChildId === child.id ? 'Hide QR' : 'Show QR'}
+                      {qrChildId === child.id ? t('parent.children.hideQr') : t('parent.children.showQr')}
                     </button>
                   </div>
 
@@ -294,7 +294,7 @@ export default function Children() {
                     <div className="flex flex-col items-center gap-2 py-3">
                       <QrCodeImg url={kioskUrl} size={180} />
                       <p className={`${tw.muted} text-center max-w-xs`}>
-                        Scan with the child's device or Fully Kiosk Browser.
+                        {t('parent.children.qrHint')}
                       </p>
                     </div>
                   )}

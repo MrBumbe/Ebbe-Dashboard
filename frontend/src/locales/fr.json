@@ -1,0 +1,303 @@
+{
+  "appName": "Ebbe",
+  "loading": "Chargement...",
+  "child": {
+    "goodMorning": "Bonjour !",
+    "goodEvening": "Bonsoir !",
+    "tasks": {
+      "morning": "Routine du matin",
+      "evening": "Routine du soir",
+      "custom":  "Routine personnalisée",
+      "allDone": "Bravo ! Tout est fait ! 🎉",
+      "progress": "{{done}} sur {{total}} terminés"
+    },
+    "mood": {
+      "prompt": "Comment tu te sens ?",
+      "happy":   "Content",
+      "okay":    "Bien",
+      "sad":     "Triste",
+      "angry":   "En colère",
+      "tired":   "Fatigué",
+      "excited": "Enthousiaste",
+      "anxious": "Anxieux",
+      "logged":  "Humeur enregistrée !",
+      "cooldownSoon": "Tu pourras te reconnecter bientôt.",
+      "cooldownMinutes": "Prochain enregistrement dans {{minutes}} min."
+    },
+    "stars": {
+      "label": "Étoiles",
+      "balance": "Tu as {{count}} étoiles !",
+      "tapToOpen": "Appuie pour ouvrir la boutique ou l'historique"
+    },
+    "store": {
+      "title":     "Boutique d'étoiles",
+      "balance":   "Ton solde : {{count}} ⭐",
+      "want":      "Je veux ça !",
+      "requested": "Demandé ✓",
+      "empty":     "Aucune récompense disponible pour l'instant.",
+      "autoClose": "Fermeture dans {{seconds}}s"
+    },
+    "history": {
+      "title":     "Historique des étoiles",
+      "empty":     "Aucune transaction pour l'instant.",
+      "autoClose": "Fermeture dans {{seconds}}s"
+    },
+    "timer": {
+      "label": "Dans {{minutes}} min : {{activity}}"
+    },
+    "schedule": {
+      "title": "Cette semaine",
+      "days": {
+        "0": "Lundi",
+        "1": "Mardi",
+        "2": "Mercredi",
+        "3": "Jeudi",
+        "4": "Vendredi",
+        "5": "Samedi",
+        "6": "Dimanche"
+      }
+    },
+    "event": {
+      "daysLeft_one":   "Dans {{count}} jour : {{title}}",
+      "daysLeft_other": "Dans {{count}} jours : {{title}}",
+      "today": "Aujourd'hui : {{title}} ! 🎉"
+    }
+  },
+  "parent": {
+    "nav": {
+      "dashboard": "Tableau de bord",
+      "tasks":     "Tâches",
+      "schedule":  "Planning",
+      "events":    "Événements",
+      "rewards":   "Récompenses",
+      "mood":      "Journal d'humeur",
+      "timer":     "Minuteur",
+      "layout":    "Disposition",
+      "children":  "Enfants",
+      "settings":  "Paramètres",
+      "users":     "Utilisateurs",
+      "logout":    "Se déconnecter"
+    },
+    "login": {
+      "title":    "Connexion",
+      "email":    "Adresse e-mail",
+      "password": "Mot de passe",
+      "submit":   "Se connecter",
+      "error":    "E-mail ou mot de passe incorrect"
+    },
+    "tasks": {
+      "title":                "Tâches de routine",
+      "add":                  "Ajouter une tâche",
+      "morning":              "Matin",
+      "evening":              "Soir",
+      "customRoutine":        "Routine personnalisée",
+      "createNewRoutine":     "Créer une nouvelle routine",
+      "routineNamePlaceholder": "Nom de la routine",
+      "titlePlaceholder":     "Titre de la tâche",
+      "starValue":            "Étoiles",
+      "visibleToChild":       "Visible par l'enfant",
+      "activeDays":           "Jours actifs",
+      "timeFrom":             "De",
+      "timeTo":               "À",
+      "timeHint":             "La tâche apparaît 2 heures avant l'heure de début.",
+      "save":                 "Enregistrer",
+      "delete":               "Supprimer"
+    },
+    "rewards": {
+      "title":              "Récompenses",
+      "balance":            "Solde : {{count}} ⭐",
+      "add":                "Ajouter une récompense",
+      "redeem":             "Échanger",
+      "starCost":           "Étoiles",
+      "pendingRequests":    "Demandes en attente",
+      "approve":            "Approuver",
+      "deny":               "Refuser",
+      "manualAdjust":       "Ajustement manuel des étoiles",
+      "adjustAmount":       "Montant",
+      "adjustDescription":  "Description",
+      "adjustSubmit":       "Appliquer"
+    },
+    "timer": {
+      "title":   "Envoyer un avertissement",
+      "minutes": "Minutes",
+      "label":   "Activité (ex. Dîner)",
+      "send":    "Envoyer à l'écran",
+      "cancel":  "Annuler le minuteur"
+    },
+    "schedule": {
+      "addItem":      "Ajouter un élément",
+      "editItem":     "Modifier l'élément",
+      "titlePlaceholder": "Titre",
+      "recurring":    "Récurrent chaque semaine",
+      "specificDate": "Date précise (événement unique)",
+      "annualDate":   "Date annuelle",
+      "clearDate":    "Utiliser le jour de la semaine"
+    },
+    "layout": {
+      "title": "Disposition de l'écran enfant",
+      "hint":  "Activer, désactiver et réorganiser les widgets sur l'écran enfant.",
+      "page":  "Page {{number}}"
+    },
+    "users": {
+      "title":              "Gestion des utilisateurs",
+      "familyName":         "Nom de famille",
+      "members":            "Membres de la famille",
+      "edit":               "Modifier",
+      "roleAdmin":          "Parent",
+      "roleParent":         "Proche",
+      "roleTitlePlaceholder": "Titre de rôle personnalisé (optionnel)",
+      "mustChangePassword": "Doit changer le mot de passe",
+      "inviteNew":          "Inviter un nouvel utilisateur",
+      "inviteRole":         "Rôle",
+      "generateLink":       "Générer un lien d'invitation",
+      "inviteLinkReady":    "Lien d'invitation prêt — partagez-le manuellement :",
+      "inviteExpires":      "Expire : {{time}}",
+      "confirmDelete":      "Supprimer l'utilisateur {{name}} ?",
+      "resetPassword":      "Réinitialiser le mot de passe…",
+      "tempPasswordLabel":  "Mot de passe temporaire (à partager en toute sécurité) :",
+      "tempPasswordHint":   "L'utilisateur devra le changer à la prochaine connexion.",
+      "namePlaceholder":    "Nom d'affichage",
+      "phonePlaceholder":   "Numéro de téléphone"
+    },
+    "children": {
+      "title":          "Enfants",
+      "add":            "Ajouter un enfant",
+      "empty":          "Aucun enfant ajouté pour l'instant.",
+      "namePlaceholder": "Prénom de l'enfant",
+      "birthdate":      "Date de naissance",
+      "born":           "Né(e)",
+      "copy":           "Copier l'URL",
+      "copied":         "Copié !",
+      "manage":         "Gérer les enfants…",
+      "tokenHint":      "Chaque enfant a sa propre URL kiosque. Utilisez-la dans Fully Kiosk Browser ou tout navigateur sur tablette.",
+      "confirmDelete":  "Supprimer {{name}} ?",
+      "cancel":         "Annuler",
+      "showQr":         "Afficher QR",
+      "hideQr":         "Masquer QR",
+      "qrHint":         "Scannez avec l'appareil de l'enfant ou Fully Kiosk Browser."
+    },
+    "join": {
+      "title":            "Créer votre compte",
+      "subtitle":         "Vous avez été invité à rejoindre une famille sur Ebbe.",
+      "name":             "Votre nom",
+      "phone":            "Numéro de téléphone (optionnel)",
+      "phonePlaceholder": "ex. +33 6 12 34 56 78",
+      "confirmPassword":  "Confirmer le mot de passe",
+      "submit":           "Créer un compte",
+      "invalidToken":     "Ce lien d'invitation est invalide ou manquant.",
+      "tokenExpired":     "Ce lien d'invitation a expiré. Demandez-en un nouveau.",
+      "tokenUsed":        "Ce lien d'invitation a déjà été utilisé.",
+      "emailTaken":       "Un compte avec cet e-mail existe déjà.",
+      "passwordMismatch": "Les mots de passe ne correspondent pas."
+    },
+    "changePassword": {
+      "title":        "Changer votre mot de passe",
+      "subtitle":     "Un administrateur a réinitialisé votre mot de passe. Veuillez en définir un nouveau avant de continuer.",
+      "current":      "Mot de passe actuel (temporaire)",
+      "new":          "Nouveau mot de passe",
+      "submit":       "Définir le nouveau mot de passe",
+      "wrongCurrent": "Le mot de passe actuel est incorrect."
+    },
+    "profile": {
+      "title":        "Votre profil",
+      "info":         "Informations du compte",
+      "role":         "Rôle",
+      "appearance":   "Apparence",
+      "darkMode":     "Mode sombre",
+      "adminSection": "Administration",
+      "saved":        "Enregistré"
+    },
+    "settings": {
+      "title":              "Paramètres",
+      "language":           "Langue",
+      "mood":               "Types d'humeur actifs",
+      "ai":                 "Assistant IA",
+      "aiOn":               "Activé",
+      "aiOff":              "Désactivé",
+      "childFeatures":      "Fonctionnalités de l'écran enfant",
+      "childFeaturesHint":  "Activer ou désactiver les fonctionnalités optionnelles sur l'écran enfant.",
+      "storeEnabled":       "Boutique d'étoiles",
+      "historyEnabled":     "Historique des étoiles",
+      "inactivitySeconds":  "Délai d'inactivité (secondes)",
+      "weatherTitle":       "Localisation météo",
+      "weatherHint":        "Cherchez une ville pour définir la localisation météo sur l'écran enfant.",
+      "weatherSaved":       "✓ Enregistré : {{name}}",
+      "weatherPlaceholder": "ex. Paris",
+      "weatherSearch":      "Rechercher",
+      "weatherNotFound":    "Aucun résultat. Essayez un autre nom de ville.",
+      "weatherSaveError":   "Échec de l'enregistrement. Veuillez réessayer.",
+      "colourTitle":        "Thème de couleur de l'écran enfant",
+      "colourHint":         "Choisissez une couleur d'accentuation pour le tableau de bord de l'enfant.",
+      "colourSaved":        "✓ Couleur enregistrée",
+      "saved":              "✓ Enregistré"
+    }
+  },
+  "setup": {
+    "step":     "Étape {{step}} sur {{total}}",
+    "back":     "← Retour",
+    "next":     "Suivant →",
+    "copy":     "Copier",
+    "welcome": {
+      "title":    "Bienvenue sur Ebbe !",
+      "subtitle": "Configurons votre tableau de bord familial. Ça ne prend qu'une minute.",
+      "cta":      "Commencer →"
+    },
+    "familyName": {
+      "title":       "Quel est le nom de votre famille ?",
+      "hint":        "Ce nom apparaîtra sur le tableau de bord.",
+      "placeholder": "Les Dupont"
+    },
+    "account": {
+      "title":               "Créer votre compte administrateur",
+      "hint":                "Ce sera le compte administrateur. Vous pourrez inviter d'autres membres de la famille plus tard.",
+      "name":                "Votre nom",
+      "namePlaceholder":     "Alex",
+      "email":               "Adresse e-mail",
+      "emailPlaceholder":    "vous@exemple.fr",
+      "password":            "Mot de passe",
+      "passwordPlaceholder": "Au moins 8 caractères",
+      "confirmPassword":     "Confirmer le mot de passe",
+      "confirmPlaceholder":  "Répétez votre mot de passe",
+      "errorNameRequired":   "Le nom est requis.",
+      "errorEmailRequired":  "L'adresse e-mail est requise.",
+      "errorEmailInvalid":   "Veuillez entrer une adresse e-mail valide.",
+      "errorPasswordRequired": "Le mot de passe est requis.",
+      "errorPasswordShort":  "Le mot de passe doit comporter au moins 8 caractères.",
+      "errorPasswordMismatch": "Les mots de passe ne correspondent pas."
+    },
+    "language": {
+      "title": "Choisissez votre langue",
+      "hint":  "Cela définit la langue du panneau parent et de l'écran enfant."
+    },
+    "children": {
+      "title":           "Ajouter vos enfants",
+      "hint":            "Ajoutez au moins un enfant pour commencer. Vous pouvez en ajouter d'autres plus tard depuis le panneau parent.",
+      "remove":          "Supprimer",
+      "addLabel":        "Ajouter un enfant",
+      "namePlaceholder": "Prénom de l'enfant",
+      "nameRequired":    "Le nom est requis.",
+      "addButton":       "+ Ajouter un enfant",
+      "submitting":      "Configuration en cours…"
+    },
+    "done": {
+      "title":             "Ebbe est prêt !",
+      "hint":              "Voici les liens dont vous aurez besoin. Scannez le QR code avec l'appareil de l'enfant ou copiez l'URL.",
+      "childScreen":       "📱 Écran enfant",
+      "shortUrl":          "URL courte",
+      "shortUrlNote":      "(facile à saisir)",
+      "fullUrl":           "URL complète",
+      "fullUrlNote":       "(plus sécurisée)",
+      "urlExplanation":    "L'URL courte est plus facile à saisir sur votre réseau local. L'URL complète contient le jeton de sécurité complet.",
+      "parentPanel":       "👨‍👩‍👧 Panneau parent",
+      "multipleAddresses": "Plusieurs adresses réseau trouvées ({{addresses}}). Essayez d'ouvrir les liens depuis votre téléphone ou tablette sur le même Wi‑Fi — la bonne adresse chargera Ebbe directement.",
+      "findLater":         "Ne vous inquiétez pas de sauvegarder ces liens maintenant — vous pourrez toujours les retrouver dans la section Enfants du panneau parent.",
+      "openPanel":         "Ouvrir le panneau parent →"
+    },
+    "errorSetupFailed": "La configuration a échoué. Veuillez réessayer.",
+    "errorNetwork":     "Erreur réseau. Assurez-vous que le serveur fonctionne et réessayez."
+  },
+  "errors": {
+    "networkError": "Impossible de joindre le serveur. Vérifiez votre connexion.",
+    "unknown":      "Une erreur s'est produite. Veuillez réessayer."
+  }
+}

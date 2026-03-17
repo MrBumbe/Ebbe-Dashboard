@@ -27,17 +27,26 @@ const ACCENT_COLOURS = [
 export default function Settings() {
   const { t } = useTranslation();
 
+  const SUPPORTED_LANGS = ['en', 'sv', 'fr', 'de', 'es', 'nl'] as const;
+  type SupportedLang = typeof SUPPORTED_LANGS[number];
+
   // Language — initialized from i18n (itself seeded from localStorage or DB on child load)
-  const [lang, setLang] = useState(i18n.language.startsWith('sv') ? 'sv' : 'en');
+  const [lang, setLang] = useState<SupportedLang>(
+    SUPPORTED_LANGS.includes(i18n.language as SupportedLang) ? i18n.language as SupportedLang : 'en'
+  );
 
   // Sync lang state with the persisted DB value on mount
   useEffect(() => {
     client.get<{ data: { key: string; value: string } }>('/settings/family.language')
-      .then((res) => { setLang(res.data.data.value as string); })
+      .then((res) => {
+        const val = res.data.data.value as SupportedLang;
+        if (SUPPORTED_LANGS.includes(val)) setLang(val);
+      })
       .catch(() => { /* use i18n default */ });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function handleLang(l: string) {
+  function handleLang(l: SupportedLang) {
     setLang(l);
     void i18n.changeLanguage(l);
     localStorage.setItem('ebbe_lang', l);
@@ -62,7 +71,7 @@ export default function Settings() {
       );
       const json = await res.json() as { results?: GeoResult[] };
       setResults(json.results ?? []);
-      if (!json.results?.length) setLocationError('No locations found. Try a different city name.');
+      if (!json.results?.length) setLocationError(t('parent.settings.weatherNotFound'));
     } catch {
       setLocationError(t('errors.networkError'));
     } finally {
@@ -82,7 +91,7 @@ export default function Settings() {
       setResults([]);
       setQuery('');
     } catch {
-      setLocationError('Failed to save location. Please try again.');
+      setLocationError(t('parent.settings.weatherSaveError'));
     }
   }
 
@@ -136,14 +145,21 @@ export default function Settings() {
       {/* Language */}
       <section className={`${tw.card} p-5 mb-4`}>
         <h2 className={`${tw.labelMd} mb-3`}>{t('parent.settings.language')}</h2>
-        <div className="flex gap-3">
-          {(['sv', 'en'] as const).map((l) => (
+        <div className="flex flex-wrap gap-2">
+          {([
+            { code: 'en', label: '🇬🇧 English'    },
+            { code: 'sv', label: '🇸🇪 Svenska'    },
+            { code: 'fr', label: '🇫🇷 Français'   },
+            { code: 'de', label: '🇩🇪 Deutsch'    },
+            { code: 'es', label: '🇪🇸 Español'    },
+            { code: 'nl', label: '🇳🇱 Nederlands' },
+          ] as { code: SupportedLang; label: string }[]).map(({ code, label }) => (
             <button
-              key={l}
-              onClick={() => handleLang(l)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${lang === l ? 'bg-blue-700 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+              key={code}
+              onClick={() => handleLang(code)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${lang === code ? 'bg-blue-700 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
             >
-              {l === 'sv' ? '🇸🇪 Svenska' : '🇬🇧 English'}
+              {label}
             </button>
           ))}
         </div>
@@ -151,10 +167,10 @@ export default function Settings() {
 
       {/* Weather location */}
       <section className={`${tw.card} p-5 mb-4`}>
-        <h2 className={`${tw.labelMd} mb-1`}>Weather location</h2>
-        <p className={`${tw.muted} mb-3`}>Search for a city to set the weather location on the child screen.</p>
+        <h2 className={`${tw.labelMd} mb-1`}>{t('parent.settings.weatherTitle')}</h2>
+        <p className={`${tw.muted} mb-3`}>{t('parent.settings.weatherHint')}</p>
         {savedLocation && (
-          <p className="text-xs text-green-600 dark:text-green-400 mb-3">✓ Saved: {savedLocation}</p>
+          <p className="text-xs text-green-600 dark:text-green-400 mb-3">{t('parent.settings.weatherSaved', { name: savedLocation })}</p>
         )}
         <div className="flex gap-2 mb-2">
           <input
@@ -162,7 +178,7 @@ export default function Settings() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && void handleSearch()}
-            placeholder="e.g. Mullsjö"
+            placeholder={t('parent.settings.weatherPlaceholder')}
             className={`flex-1 ${tw.input}`}
           />
           <button
@@ -170,7 +186,7 @@ export default function Settings() {
             disabled={searching}
             className="bg-blue-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-800 disabled:opacity-50"
           >
-            {searching ? '...' : 'Search'}
+            {searching ? '...' : t('parent.settings.weatherSearch')}
           </button>
         </div>
         {locationError && <p className="text-xs text-red-500 dark:text-red-400 mb-2">{locationError}</p>}
@@ -199,8 +215,8 @@ export default function Settings() {
 
       {/* Child accent colour */}
       <section className={`${tw.card} p-5 mb-4`}>
-        <h2 className={`${tw.labelMd} mb-1`}>Child screen colour theme</h2>
-        <p className={`${tw.muted} mb-3`}>Choose an accent colour for the child's dashboard.</p>
+        <h2 className={`${tw.labelMd} mb-1`}>{t('parent.settings.colourTitle')}</h2>
+        <p className={`${tw.muted} mb-3`}>{t('parent.settings.colourHint')}</p>
         <div className="flex flex-wrap gap-3">
           {ACCENT_COLOURS.map((c) => (
             <button
@@ -217,7 +233,7 @@ export default function Settings() {
             />
           ))}
         </div>
-        {colorSaved && <p className="text-xs text-green-600 dark:text-green-400 mt-2">✓ Colour saved</p>}
+        {colorSaved && <p className="text-xs text-green-600 dark:text-green-400 mt-2">{t('parent.settings.colourSaved')}</p>}
       </section>
 
       {/* Child screen features */}
@@ -255,7 +271,7 @@ export default function Settings() {
             />
           </div>
         </div>
-        {featuresSaved && <p className="text-xs text-green-600 dark:text-green-400 mt-3">✓ Saved</p>}
+        {featuresSaved && <p className="text-xs text-green-600 dark:text-green-400 mt-3">{t('parent.settings.saved')}</p>}
         <div className="flex justify-end mt-3">
           <button
             onClick={() => void handleFeaturesSave()}

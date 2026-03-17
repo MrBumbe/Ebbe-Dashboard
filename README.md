@@ -21,7 +21,7 @@ Interested in contributing? See [CONTRIBUTING.md](CONTRIBUTING.md).
 | Analogue + digital clock | Helps children learn to read the time |
 | Weather widget | Current weather via Open-Meteo (no API key needed) |
 | Parent admin panel | Manage everything from any phone, tablet, or browser |
-| Multi-language | Swedish and English included |
+| Multi-language | Swedish, English, French, German, Spanish and Dutch included |
 
 ---
 
@@ -201,4 +201,11 @@ Free to use, modify and distribute. See [LICENSE](LICENSE) for full terms.
 
 ## Contributing
 
-Pull requests welcome. To add a language, create a file in `frontend/src/locales/` and open a PR.
+Pull requests welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines.
+
+### Translations
+
+Ebbe ships with Swedish and English as primary languages. Community-generated translations for
+French, German, Spanish and Dutch are also included. These were AI-generated and may contain
+errors — native speakers are very welcome to submit corrections via pull request. Adding a new
+language is as simple as copying `en.json`, translating the values, and opening a PR.

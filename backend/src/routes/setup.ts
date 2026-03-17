@@ -67,7 +67,8 @@ router.post('/', (req: Request, res: Response) => {
 
   const familyId = randomUUID();
   const now      = Date.now();
-  const lang     = language === 'sv' ? 'sv' : 'en';
+  const SUPPORTED_LANGS = ['en', 'sv', 'fr', 'de', 'es', 'nl'];
+  const lang     = (language && SUPPORTED_LANGS.includes(language)) ? language : 'en';
 
   // ── Normalise children input ──────────────────────────────────────────────
   // If children were provided by the wizard, use them.
