@@ -22,6 +22,7 @@ import layoutsRoutes from './routes/layouts';
 import usersRoutes from './routes/users';
 import familyRoutes from './routes/family';
 import childrenRoutes from './routes/children';
+import shortlinkRoutes from './routes/shortlink';
 
 // ── 1. Load JWT secrets (env vars or auto-generated in DB) ────────────────
 // Must happen before any JWT operations (auth routes, etc.)
@@ -70,6 +71,7 @@ app.use('/api/v1/layouts',  layoutsRoutes);
 app.use('/api/v1/users',    usersRoutes);
 app.use('/api/v1/family',   familyRoutes);
 app.use('/api/v1/children', childrenRoutes);
+app.use('/c',              shortlinkRoutes);
 
 // Module routes — mounted dynamically by loader
 initModules(app);

@@ -8,6 +8,18 @@ import * as schema from './schema';
 import { mkdirSync } from 'fs';
 import { dirname, resolve } from 'path';
 
+/** Generate a unique 4-digit short PIN for the /c/:pin redirect. */
+export function generateShortPin(db: ReturnType<typeof drizzle<typeof schema>>): string {
+  for (let i = 0; i < 200; i++) {
+    const pin = String(Math.floor(1000 + Math.random() * 9000)); // 1000–9999
+    const existing = db.select({ id: schema.children.id }).from(schema.children)
+      .where(eq(schema.children.shortPin, pin)).get();
+    if (!existing) return pin;
+  }
+  // Extremely unlikely — fall back to 6 digits
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
 export function initDb() {
@@ -70,6 +82,18 @@ export function initDb() {
       if ((txUpdated.changes ?? 0) > 0 || (compUpdated.changes ?? 0) > 0) {
         console.log(`Migrated ${txUpdated.changes} transactions and ${compUpdated.changes} completions to child ${soleChildId}`);
       }
+    }
+  }
+
+  // ── Fixup 3: assign shortPins to any children that don't have one ─────────
+  // Runs once after migration 0007 adds the short_pin column.
+  const allChildren = db.select().from(schema.children).all();
+  for (const child of allChildren) {
+    if (!child.shortPin) {
+      const pin = generateShortPin(db);
+      db.update(schema.children).set({ shortPin: pin })
+        .where(eq(schema.children.id, child.id)).run();
+      console.log(`Assigned short PIN ${pin} to child ${child.name}`);
     }
   }
 

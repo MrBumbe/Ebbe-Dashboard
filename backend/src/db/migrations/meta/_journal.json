@@ -50,6 +50,13 @@
       "when": 1774150000000,
       "tag": "0006_schedule_child_scope",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1774200000000,
+      "tag": "0007_children_short_pin",
+      "breakpoints": true
     }
   ]
 }

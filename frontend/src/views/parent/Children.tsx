@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import QRCode from 'qrcode';
 import { useTranslation } from 'react-i18next';
 import client from '../../api/client';
 import EmojiPicker from '../../components/EmojiPicker';
@@ -11,6 +12,7 @@ interface Child {
   color: string;
   birthdate: number | null;
   childToken: string;
+  shortPin: string | null;
   createdAt: number;
 }
 
@@ -38,6 +40,23 @@ const DEFAULT_FORM: FormState = {
   color: '#1565C0',
   birthdate: '',
 };
+
+// ── QR code inline image ────────────────────────────────────────────────────
+
+function QrCodeImg({ url, size = 180 }: { url: string; size?: number }) {
+  const [src, setSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    void QRCode.toDataURL(url, { width: size, margin: 2 }).then(setSrc);
+  }, [url, size]);
+
+  if (!src) return <div style={{ width: size, height: size }} className="bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse" />;
+  return (
+    <a href={url} target="_blank" rel="noreferrer" title="Open child screen">
+      <img src={src} alt="QR code" width={size} height={size} className="rounded-lg border border-gray-200 dark:border-gray-600 hover:opacity-90 transition-opacity" />
+    </a>
+  );
+}
 
 // ── ChildForm at module level — prevents focus loss on keystroke ───────────
 // Defining the form component inside Children() would create a new component
@@ -99,10 +118,11 @@ function ChildForm({ form, onChange, onSubmit, submitLabel, onCancel }: ChildFor
 export default function Children() {
   const { t } = useTranslation();
   const [childList, setChildList] = useState<Child[]>([]);
-  const [adding, setAdding] = useState(false);
-  const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState<FormState>(DEFAULT_FORM);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [adding, setAdding]       = useState(false);
+  const [editId, setEditId]       = useState<string | null>(null);
+  const [form, setForm]           = useState<FormState>(DEFAULT_FORM);
+  const [copiedId, setCopiedId]   = useState<string | null>(null);
+  const [qrChildId, setQrChildId] = useState<string | null>(null); // which child's QR is expanded
 
   async function load() {
     const res = await client.get<{ data: Child[] }>('/children');
@@ -132,9 +152,9 @@ export default function Children() {
 
   function buildPayload(f: FormState) {
     return {
-      name: f.name,
-      emoji: f.emoji,
-      color: f.color,
+      name:      f.name,
+      emoji:     f.emoji,
+      color:     f.color,
       birthdate: f.birthdate ? new Date(f.birthdate).getTime() : null,
     };
   }
@@ -167,6 +187,10 @@ export default function Children() {
     setTimeout(() => setCopiedId(null), 2000);
   }
 
+  function toggleQr(id: string) {
+    setQrChildId((prev) => (prev === id ? null : id));
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -195,60 +219,90 @@ export default function Children() {
         {childList.length === 0 && (
           <div className={`px-4 py-8 text-center ${tw.muted}`}>{t('parent.children.empty')}</div>
         )}
-        {childList.map((child) => (
-          <div key={child.id}>
-            {editId === child.id ? (
-              <div className="p-3">
-                <ChildForm
-                  form={form}
-                  onChange={setForm}
-                  onSubmit={handleEdit}
-                  submitLabel={t('parent.tasks.save')}
-                  onCancel={cancelForm}
-                />
-              </div>
-            ) : (
-              <div className="px-4 py-3 flex flex-col gap-2">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{child.emoji}</span>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className={`font-medium ${tw.body}`}>{child.name}</span>
-                      <span
-                        className="w-3 h-3 rounded-full inline-block border border-gray-200 dark:border-gray-600"
-                        style={{ backgroundColor: child.color }}
-                      />
+        {childList.map((child) => {
+          const kioskUrl = `${window.location.origin}/child?token=${child.childToken}`;
+          return (
+            <div key={child.id}>
+              {editId === child.id ? (
+                <div className="p-3">
+                  <ChildForm
+                    form={form}
+                    onChange={setForm}
+                    onSubmit={handleEdit}
+                    submitLabel={t('parent.tasks.save')}
+                    onCancel={cancelForm}
+                  />
+                </div>
+              ) : (
+                <div className="px-4 py-3 flex flex-col gap-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{child.emoji}</span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`font-medium ${tw.body}`}>{child.name}</span>
+                        <span
+                          className="w-3 h-3 rounded-full inline-block border border-gray-200 dark:border-gray-600"
+                          style={{ backgroundColor: child.color }}
+                        />
+                      </div>
+                      {child.birthdate && (
+                        <p className={`${tw.muted} mt-0.5`}>
+                          {t('parent.children.born')}: {new Date(child.birthdate).toLocaleDateString()}
+                        </p>
+                      )}
                     </div>
-                    {child.birthdate && (
-                      <p className={`${tw.muted} mt-0.5`}>
-                        {t('parent.children.born')}: {new Date(child.birthdate).toLocaleDateString()}
-                      </p>
-                    )}
+                    <button onClick={() => startEdit(child)} className="text-xs text-blue-500 hover:text-blue-700 px-2 py-1">
+                      {t('parent.users.edit')}
+                    </button>
+                    <button onClick={() => void handleDelete(child.id, child.name)} className="text-xs text-red-400 hover:text-red-600 px-2 py-1">
+                      {t('parent.tasks.delete')}
+                    </button>
                   </div>
-                  <button onClick={() => startEdit(child)} className="text-xs text-blue-500 hover:text-blue-700 px-2 py-1">
-                    {t('parent.users.edit')}
-                  </button>
-                  <button onClick={() => void handleDelete(child.id, child.name)} className="text-xs text-red-400 hover:text-red-600 px-2 py-1">
-                    {t('parent.tasks.delete')}
-                  </button>
-                </div>
 
-                {/* Kiosk URL */}
-                <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
-                  <code className={`flex-1 text-xs truncate ${tw.secondary}`}>
-                    {window.location.origin}/child?token={child.childToken}
-                  </code>
-                  <button
-                    onClick={() => void copyUrl(child)}
-                    className={`text-xs px-2 py-1 rounded transition-colors ${copiedId === child.id ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-white dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500 border border-gray-200 dark:border-gray-500'}`}
-                  >
-                    {copiedId === child.id ? '✓ ' + t('parent.children.copied') : t('parent.children.copy')}
-                  </button>
+                  {/* Kiosk URL */}
+                  <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
+                    <code className={`flex-1 text-xs truncate ${tw.secondary}`}>
+                      {kioskUrl}
+                    </code>
+                    <button
+                      onClick={() => void copyUrl(child)}
+                      className={`text-xs px-2 py-1 rounded transition-colors ${copiedId === child.id ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-white dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500 border border-gray-200 dark:border-gray-500'}`}
+                    >
+                      {copiedId === child.id ? '✓ ' + t('parent.children.copied') : t('parent.children.copy')}
+                    </button>
+                    <button
+                      onClick={() => toggleQr(child.id)}
+                      className={`text-xs px-2 py-1 rounded transition-colors bg-white dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500 border border-gray-200 dark:border-gray-500`}
+                      title="Show QR code"
+                    >
+                      {qrChildId === child.id ? 'Hide QR' : 'Show QR'}
+                    </button>
+                  </div>
+
+                  {/* Short URL */}
+                  {child.shortPin && (
+                    <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
+                      <span className={`${tw.muted} text-xs shrink-0`}>Short:</span>
+                      <code className={`flex-1 text-xs truncate ${tw.secondary}`}>
+                        {window.location.origin}/c/{child.shortPin}
+                      </code>
+                    </div>
+                  )}
+
+                  {/* QR code — expanded inline */}
+                  {qrChildId === child.id && (
+                    <div className="flex flex-col items-center gap-2 py-3">
+                      <QrCodeImg url={kioskUrl} size={180} />
+                      <p className={`${tw.muted} text-center max-w-xs`}>
+                        Scan with the child's device or Fully Kiosk Browser.
+                      </p>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
-          </div>
-        ))}
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <p className={`${tw.muted} mt-4`}>{t('parent.children.tokenHint')}</p>

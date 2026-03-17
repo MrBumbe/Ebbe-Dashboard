@@ -43,6 +43,7 @@ export const children = sqliteTable('children', {
   color:      text('color').notNull().default('#1565C0'),
   birthdate:  integer('birthdate'),            // unix ms; optional
   childToken: text('child_token').notNull().unique(),
+  shortPin:   text('short_pin').unique(),          // 4-digit PIN for /c/:pin short URL
   createdAt:  integer('created_at').notNull(),
 });
 

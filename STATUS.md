@@ -1,6 +1,6 @@
 # Ebbe — Build Status
 
-Last updated: 2026-03-17 (session 19)
+Last updated: 2026-03-17 (session 20)
 
 ---
 
@@ -32,7 +32,8 @@ Last updated: 2026-03-17 (session 19)
 | `routes/setup.ts` | ✅ Done | `GET /status` (configured?), `POST /` first-run setup (accepts adminName + language) |
 | `routes/users.ts` | ✅ Done | `GET /` (admin), `GET /me`, `POST /invite` (admin), `POST /join` (public), `PATCH /me/password`, `PATCH /me/profile`, `PATCH /:id` (admin), `DELETE /:id` (admin), `POST /:id/reset-password` (admin) |
 | `routes/family.ts` | ✅ Done | `GET /`, `PATCH /` (admin) — get/update family name |
-| `routes/children.ts` | ✅ Done | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id` — per-child profiles with unique childTokens |
+| `routes/children.ts` | ✅ Done | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id` — per-child profiles with unique childTokens + shortPins |
+| `routes/shortlink.ts` | ✅ Done | `GET /c/:pin` — short URL redirect to child screen |
 
 ## Backend — Core
 
@@ -76,7 +77,7 @@ Last updated: 2026-03-17 (session 19)
 | `views/child/WeekSchedule.tsx` | ✅ Done | Starts from today; compact mode |
 | `views/child/UpcomingEvent.tsx` | ✅ Done | Countdown in days |
 | `views/child/TimerAlert.tsx` | ✅ Done | Fullscreen / minimized bar; Web Audio chime |
-| `views/SetupWizard.tsx` | ✅ Done | 4+1 step first-run wizard: welcome, family name, admin account, language, success+URLs |
+| `views/SetupWizard.tsx` | ✅ Done | 5+1 step wizard: welcome, family name, admin account, language, children, success+QR+URLs |
 | `views/parent/Login.tsx` | ✅ Done | |
 | `views/parent/ParentApp.tsx` | ✅ Done | Sidebar nav + Layout entry |
 | `views/parent/Dashboard.tsx` | ✅ Done | |
@@ -198,6 +199,31 @@ Events design (intentional):
   - `db/index.ts`: startup fixup — after migrations, any family with no `children` rows gets a default child record created using `families.childToken`. Runs once and is idempotent.
   - `routes/setup.ts`: also inserts a default child row at setup time for new installs.
 - The existing child now appears in the Children management page with name "Child" (editable) and the same kiosk URL as before.
+
+## Session 20 additions (2026-03-17)
+
+**Wizard child setup + QR codes + short URLs:**
+
+**Fix 1 — Language applied immediately after wizard:**
+- `frontend/src/views/SetupWizard.tsx`: `handleFinish()` now calls `localStorage.setItem('ebbe_lang', ...)` and `i18n.changeLanguage()` immediately on successful setup, before the success screen is shown. Language is therefore correct on the full-page reload when navigating to `/parent`.
+
+**Fix 2 — Children step added to wizard:**
+- New Step 5 "Add your children" with inline add-child form (name, EmojiPicker, 8 colour swatches). Children accumulate in a local list with remove buttons. "Next →" disabled until at least one child added. Step 6 is the Done screen.
+- `backend/src/routes/setup.ts`: accepts `children` array in POST body; creates all children with individual tokens and shortPins; returns `children` array in response. Falls back to single default "Child" if array not provided.
+
+**Fix 3 — Done screen per-child sections with QR codes:**
+- `frontend/src/views/SetupWizard.tsx` success screen: each child gets its own card with name/emoji header, QR code (180px, clickable link), short URL field, full URL field. URLs are both copyable and open in new tab. Reassuring note about finding URLs later in Children panel.
+- `frontend/src/views/parent/Children.tsx`: added "Show QR" / "Hide QR" toggle button per child row. Expands inline `QrCodeImg` (180px) below the URL bar. Also shows short URL (`/c/:pin`) as a secondary row.
+- `frontend/package.json`: added `qrcode` + `@types/qrcode` dependencies.
+
+**Fix 4 — Short URL alias per child:**
+- `backend/src/db/schema.ts`: added `shortPin TEXT UNIQUE` to children table.
+- `backend/src/db/migrations/0007_children_short_pin.sql`: `ALTER TABLE children ADD COLUMN short_pin TEXT`.
+- `backend/src/db/index.ts`: exported `generateShortPin(db)` helper (4-digit 1000–9999, unique, falls back to 6 digits); Fixup 3 generates PINs for any existing children without one.
+- `backend/src/routes/children.ts`: generates `shortPin` on every new child created.
+- `backend/src/routes/shortlink.ts` (NEW): `GET /c/:pin` — validates PIN format, looks up child, redirects 302 to `/child?token=<childToken>`.
+- `backend/src/index.ts`: mounts shortlink router at `/c`.
+- `Caddyfile`: added `@shortlink path /c/*` block routing to backend before the frontend catch-all.
 
 ## Session 19 additions (2026-03-17)
 

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { eq, and } from 'drizzle-orm';
 import { randomUUID, randomBytes } from 'crypto';
-import { getDb } from '../db';
+import { getDb, generateShortPin } from '../db';
 import { children } from '../db/schema';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 
@@ -29,6 +29,7 @@ router.post('/', requireAuth, (req: AuthRequest, res) => {
   }
   const db = getDb();
   const childToken = randomBytes(24).toString('hex');
+  const shortPin   = generateShortPin(db);
   const id = randomUUID();
   db.insert(children).values({
     id,
@@ -38,6 +39,7 @@ router.post('/', requireAuth, (req: AuthRequest, res) => {
     color: color ?? '#1565C0',
     birthdate: birthdate ?? null,
     childToken,
+    shortPin,
     createdAt: Date.now(),
   }).run();
   const child = db.select().from(children).where(eq(children.id, id)).get();
