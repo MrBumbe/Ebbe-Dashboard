@@ -130,6 +130,10 @@ Everything through Fix 13 + session 6 fixes is shipped.
 - Bug 6: Layout manager now shows widgets (backend returns DEFAULT_LAYOUT when DB is empty; setup seeds it; header widgets filtered from LayoutManager UI).
 - New: Redesigned child screen header — always-visible 3-column header (weather, clock+analog, stars) with 3 levels based on widget count. `AnalogClock.tsx` extracted as reusable component. `ChildHeader.tsx` created.
 
+## Session 22b (2026-03-17) — EbbeLogo v2 redesign
+
+Redesigned SVG geometry: viewBox 100×100; star is now the dominant element (large 5-pointed path, center ~50,47); arc uses A32,32 radius so it rises clearly above center (not flat/dish-like); horizon line at y=72; checkmark path updated to match new star. favicon.svg updated to match. Docker rebuilt.
+
 ## Session 22 (2026-03-17) — Ebbe logo + Baloo 2 brand font
 
 - `frontend/src/components/EbbeLogo.tsx` (NEW): inline SVG React component — amber star (#F5A623) with white checkmark + sunrise arc + horizon line. Accepts `size` and `className` props. Works on any background, light or dark.
