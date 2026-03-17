@@ -1,25 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
-  <!-- 5-pointed star centred at (32,26), outer R=14, inner r=5.6 -->
-  <polygon
-    points="32,12 35.29,21.47 45.31,21.67 37.33,27.73 40.23,37.33 32,31.60 23.77,37.33 26.67,27.73 18.69,21.67 28.71,21.47"
-    fill="#F5A623"
-  />
-  <!-- White checkmark inside star -->
-  <polyline
-    points="26.5,28 30,32.5 39,19.5"
-    stroke="white"
-    stroke-width="3"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    fill="none"
-  />
-  <!-- Sunrise arc — centred at (32,50), radius 24 -->
-  <path
-    d="M 8,50 A 24,24 0 0 1 56,50"
-    stroke="#F5A623"
-    stroke-width="4"
-    stroke-linecap="round"
-  />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
   <!-- Horizon line -->
-  <line x1="4" y1="50" x2="60" y2="50" stroke="#F5A623" stroke-width="4" stroke-linecap="round"/>
+  <line x1="18" y1="72" x2="82" y2="72" stroke="#F5A623" stroke-width="6" stroke-linecap="round"/>
+  <!-- Arc — taller than wide, rises clearly above centre -->
+  <path d="M22,72 A32,32 0 0,1 78,72" stroke="#F5A623" stroke-width="6" stroke-linecap="round"/>
+  <!-- Star — large, centered, dominant -->
+  <path d="M50,18 L57,40 L82,40 L62,54 L69,76 L50,62 L31,76 L38,54 L18,40 L43,40 Z" fill="#F5A623"/>
+  <!-- Checkmark inside star -->
+  <path d="M38,54 L48,66 L65,42" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
