@@ -722,8 +722,12 @@ Migration: `backend/src/db/migrations/0001_v2_features.sql`
 - [ ] Capacitor APK build
 - [ ] Vertical scroll page navigation option (DB setting exists, horizontal swipe only for now)
 - [ ] Focus mode UI behavior (DB field `focusModeEnabled` already exists on tasks)
+- [ ] Screen Time — Manual (T1): A new reward type `screen_time` with a `minutes` parameter. The child redeems stars for screen time. The parent receives a notification/pending request in the parent panel and approves manually. No external integrations required. Uses the existing `reward_transactions` system.
 
 ## v3 scope (future)
 - [ ] AI conversation module
 - [ ] AI mood pattern analysis
 - [ ] AI memory compression system
+
+## v4 scope (future)
+- [ ] Screen Time Module — Automated (T2/T3): A modular screen time integration system with three tiers. T2: Home Assistant webhook bridge — Ebbe triggers a HA automation which controls the child's device via the parent's existing router/HA setup. T3: Native router APIs — dedicated modules for Circle, Firewalla, pfSense/OPNsense and similar routers with open local APIs. Both tiers are community-module candidates. Note: Microsoft Family Safety, Apple Screen Time and Google Family Link have no public APIs and cannot be integrated directly.
