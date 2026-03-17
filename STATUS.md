@@ -1,6 +1,6 @@
 # Ebbe — Build Status
 
-Last updated: 2026-03-17 (session 15 — CLAUDE.md reconciliation)
+Last updated: 2026-03-17 (session 15)
 
 ---
 
@@ -196,6 +196,13 @@ Events design (intentional):
   - `db/index.ts`: startup fixup — after migrations, any family with no `children` rows gets a default child record created using `families.childToken`. Runs once and is idempotent.
   - `routes/setup.ts`: also inserts a default child row at setup time for new installs.
 - The existing child now appears in the Children management page with name "Child" (editable) and the same kiosk URL as before.
+
+## Session 15 additions (2026-03-17)
+
+- `healthcheck.sh` — bash health check script (Docker, API, frontend, DB latency, WebSocket)
+- `healthcheck.ps1` — PowerShell equivalent for Windows
+- Both scripts auto-attempt `docker compose up -d` if containers are not running
+- `CLAUDE.md` fully reconciled with current architecture (all tables, auth model, project structure, session history)
 
 ## Remaining before GitHub release
 
