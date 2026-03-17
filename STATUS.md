@@ -1,6 +1,6 @@
 # Ebbe — Build Status
 
-Last updated: 2026-03-17 (session 21)
+Last updated: 2026-03-17 (session 22)
 
 ---
 
@@ -77,9 +77,9 @@ Last updated: 2026-03-17 (session 21)
 | `views/child/WeekSchedule.tsx` | ✅ Done | Starts from today; compact mode |
 | `views/child/UpcomingEvent.tsx` | ✅ Done | Countdown in days |
 | `views/child/TimerAlert.tsx` | ✅ Done | Fullscreen / minimized bar; Web Audio chime |
-| `views/SetupWizard.tsx` | ✅ Done | 5+1 step wizard: welcome, family name, admin account, language (6 langs), children, success+QR+URLs; fully i18n |
-| `views/parent/Login.tsx` | ✅ Done | |
-| `views/parent/ParentApp.tsx` | ✅ Done | Sidebar nav + Layout entry |
+| `views/SetupWizard.tsx` | ✅ Done | 5+1 step wizard: welcome, family name, admin account, language (6 langs), children, success+QR+URLs; fully i18n; EbbeLogo on welcome (size=80) + done (size=48) |
+| `views/parent/Login.tsx` | ✅ Done | EbbeLogo (size=64) + Baloo 2 brand heading |
+| `views/parent/ParentApp.tsx` | ✅ Done | Sidebar nav + Layout entry; EbbeLogo + font-brand in sidebar header + mobile top bar |
 | `views/parent/Dashboard.tsx` | ✅ Done | |
 | `views/parent/Tasks.tsx` | ✅ Done | isVisibleToChild, daysOfWeek, timeWindow, routineName, parent Complete button |
 | `views/parent/Rewards.tsx` | ✅ Done | CRUD + pending requests + manual star adjustment |
@@ -101,7 +101,7 @@ Last updated: 2026-03-17 (session 21)
 | Item | Status | Notes |
 |---|---|---|
 | `docker-compose.yml` | ✅ Done | |
-| `Caddyfile` | ✅ Done | |
+| `Caddyfile` | ✅ Done | CSP updated: fonts.googleapis.com (style-src) + fonts.gstatic.com (font-src) |
 | `.env.example` | ✅ Done | |
 | `backend/Dockerfile` | ✅ Done | |
 | `frontend/Dockerfile` | ✅ Done | |
@@ -129,6 +129,20 @@ Everything through Fix 13 + session 6 fixes is shipped.
 - Bug 5: Schedule items are now editable — click any item to open an inline edit form. Title is no longer truncated.
 - Bug 6: Layout manager now shows widgets (backend returns DEFAULT_LAYOUT when DB is empty; setup seeds it; header widgets filtered from LayoutManager UI).
 - New: Redesigned child screen header — always-visible 3-column header (weather, clock+analog, stars) with 3 levels based on widget count. `AnalogClock.tsx` extracted as reusable component. `ChildHeader.tsx` created.
+
+## Session 22 (2026-03-17) — Ebbe logo + Baloo 2 brand font
+
+- `frontend/src/components/EbbeLogo.tsx` (NEW): inline SVG React component — amber star (#F5A623) with white checkmark + sunrise arc + horizon line. Accepts `size` and `className` props. Works on any background, light or dark.
+- `frontend/public/favicon.svg` (NEW): standalone SVG logo file for browser tab + PWA icons.
+- `frontend/index.html`: added Baloo 2 Google Fonts preconnect + stylesheet; updated favicon to `/favicon.svg`; `theme-color` → `#F5A623`.
+- `frontend/tailwind.config.js`: added `font-brand: ["Baloo 2", cursive]` utility; updated `ebbe.amber` → `#F5A623`.
+- `frontend/public/manifest.json`: `background_color` + `theme_color` → `#F5A623`; icon → `/favicon.svg`.
+- `frontend/src/views/parent/ParentApp.tsx`: sidebar header + mobile top bar now use `<EbbeLogo>` + `font-brand` text.
+- `frontend/src/views/parent/Login.tsx`: centered `<EbbeLogo size={64}>` above form; "Ebbe" heading in `font-brand`.
+- `frontend/src/views/SetupWizard.tsx`: EbbeLogo size=80 on welcome step; size=48 on done step.
+- `Caddyfile`: CSP extended — `style-src` allows `fonts.googleapis.com`; added `font-src 'self' fonts.gstatic.com`.
+- `README.md`: Ebbe logo image added above title.
+- TypeScript clean on both frontend and backend. Docker reloaded.
 
 ## Session 12 fixes (2026-03-17)
 

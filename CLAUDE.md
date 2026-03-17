@@ -768,6 +768,8 @@ Before marking any child view component as done, verify:
 - [x] **Session 12** — Active-child scoping in parent panel (activeChildId in store; mood, rewards, layouts, events, tasks all scoped to selected child); child_layouts PK includes childId; events child-assignment
 - [x] **Session 13** — Mood cooldown scoped by childId (independent per child); schedule items child-scoped (childId filter on child screen)
 - [x] **Session 14** — Per-child targeted timer via WebSocket (EbbeClient stores childId; TRIGGER_TIMER/CANCEL_TIMER payload includes childId; broadcastToFamily optional 4th arg for child filtering)
+- [x] **Session 21** — Full i18n audit; community language files (fr/de/es/nl); `setup.*` key namespace; SetupWizard language step + Settings language selector expanded to 6 languages; `i18n.changeLanguage()` called immediately on selection
+- [x] **Session 22** — Ebbe logo (concept G: amber star + white checkmark + sunrise arc) as `EbbeLogo.tsx` + `favicon.svg`; Baloo 2 brand font via Google Fonts; logo applied to Login, SetupWizard (welcome + done), ParentApp sidebar + mobile header; Caddyfile CSP updated for Google Fonts; README logo added
 
 ### Remaining before GitHub release
 - [ ] Clear test data from `data/ebbe.db` (not included in git — recreated on first run)
