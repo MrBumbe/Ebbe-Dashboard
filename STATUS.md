@@ -1,6 +1,6 @@
 # Ebbe — Build Status
 
-Last updated: 2026-03-17 (session 12)
+Last updated: 2026-03-17 (session 13)
 
 ---
 
@@ -25,10 +25,10 @@ Last updated: 2026-03-17 (session 12)
 | `routes/rewards.ts` | ✅ Done | Full CRUD, `GET /balance`, `GET /transactions`, `GET /requests`, `PATCH /requests/:id` (approve/deny), `POST /adjust` (manual) |
 | `routes/layouts.ts` | ✅ Done | `GET /`, `PUT /` (replace all), `PATCH /:widgetId` — broadcasts LAYOUT_UPDATED |
 | `routes/mood.ts` | ✅ Done | `GET /`, `POST /`, `DELETE /:id` |
-| `routes/schedule.ts` | ✅ Done | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id` |
+| `routes/schedule.ts` | ✅ Done | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id` — accepts optional `childId` |
 | `routes/settings.ts` | ✅ Done | `GET /`, `GET /:key`, `PUT /:key`, `DELETE /:key` |
 | `routes/events.ts` | ✅ Done | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id` |
-| `routes/child.ts` | ✅ Done | tasks (day/time filtered), complete, schedule, events, balance, transactions, rewards, reward requests, mood status/log, layout, settings (bundled), theme, weather |
+| `routes/child.ts` | ✅ Done | tasks (day/time filtered), complete, schedule (child-scoped), events (child-scoped), balance, transactions, rewards, reward requests, mood status/log (child-scoped cooldown), layout, settings (bundled), theme, weather |
 | `routes/setup.ts` | ✅ Done | First-run setup endpoint |
 | `routes/users.ts` | ✅ Done | `GET /` (admin), `GET /me`, `POST /invite` (admin), `POST /join` (public), `PATCH /me/password`, `PATCH /me/profile`, `PATCH /:id` (admin), `DELETE /:id` (admin), `POST /:id/reset-password` (admin) |
 | `routes/family.ts` | ✅ Done | `GET /`, `PATCH /` (admin) — get/update family name |

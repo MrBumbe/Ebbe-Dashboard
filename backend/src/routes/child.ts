@@ -169,9 +169,14 @@ router.post('/tasks/:id/complete', (req: ChildRequest, res: Response) => {
 router.get('/schedule', (req: ChildRequest, res: Response) => {
   const db = getDb();
   const familyId = req.familyId!;
+  const childId = req.childId;
 
   const rows = db.select().from(scheduleItems)
-    .where(eq(scheduleItems.familyId, familyId))
+    .where(and(
+      eq(scheduleItems.familyId, familyId),
+      // Show family-wide items (childId IS NULL) OR items assigned to this child
+      childId ? or(isNull(scheduleItems.childId), eq(scheduleItems.childId, childId)) : isNull(scheduleItems.childId),
+    ))
     .orderBy(asc(scheduleItems.dayOfWeek), asc(scheduleItems.timeStart))
     .all();
 
@@ -299,13 +304,18 @@ router.post('/rewards/:id/request', (req: ChildRequest, res: Response) => {
   res.status(201).json({ data: { requestId } });
 });
 
-// GET /api/v1/child/mood/status — cooldown status
+// GET /api/v1/child/mood/status — cooldown status (scoped to this child)
 router.get('/mood/status', (req: ChildRequest, res: Response) => {
   const familyId = req.familyId!;
+  const childId = req.childId;
   const db = getDb();
 
   const recent = db.select().from(moodLog)
-    .where(and(eq(moodLog.familyId, familyId), gte(moodLog.loggedAt, oneHourAgo())))
+    .where(and(
+      eq(moodLog.familyId, familyId),
+      gte(moodLog.loggedAt, oneHourAgo()),
+      ...(childId ? [eq(moodLog.childId, childId)] : [isNull(moodLog.childId)]),
+    ))
     .get();
 
   if (recent) {
@@ -315,10 +325,11 @@ router.get('/mood/status', (req: ChildRequest, res: Response) => {
   }
 });
 
-// POST /api/v1/child/mood — log a mood (max once per hour)
+// POST /api/v1/child/mood — log a mood (max once per hour, scoped to this child)
 router.post('/mood', (req: ChildRequest, res: Response) => {
   const { mood } = req.body as { mood?: string };
   const familyId = req.familyId!;
+  const childId = req.childId;
 
   const VALID_MOODS = ['happy', 'okay', 'sad', 'angry', 'tired', 'excited', 'anxious'];
   if (!mood || !VALID_MOODS.includes(mood)) {
@@ -329,7 +340,11 @@ router.post('/mood', (req: ChildRequest, res: Response) => {
   const db = getDb();
 
   const existing = db.select().from(moodLog)
-    .where(and(eq(moodLog.familyId, familyId), gte(moodLog.loggedAt, oneHourAgo())))
+    .where(and(
+      eq(moodLog.familyId, familyId),
+      gte(moodLog.loggedAt, oneHourAgo()),
+      ...(childId ? [eq(moodLog.childId, childId)] : [isNull(moodLog.childId)]),
+    ))
     .get();
 
   if (existing) {
@@ -342,6 +357,7 @@ router.post('/mood', (req: ChildRequest, res: Response) => {
   db.insert(moodLog).values({
     id,
     familyId,
+    childId: childId ?? null,
     mood: mood as 'happy' | 'okay' | 'sad' | 'angry' | 'tired' | 'excited' | 'anxious',
     loggedAt: Date.now(),
     note: null,

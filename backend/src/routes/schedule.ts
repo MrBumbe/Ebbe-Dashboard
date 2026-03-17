@@ -25,7 +25,7 @@ router.get('/', (req: AuthRequest, res: Response) => {
 
 // POST /api/v1/schedule — create a schedule item
 router.post('/', requireRole('admin', 'parent'), (req: AuthRequest, res: Response) => {
-  const { dayOfWeek, timeStart, title, emoji, color, isRecurring, specificDate } = req.body as {
+  const { dayOfWeek, timeStart, title, emoji, color, isRecurring, specificDate, childId } = req.body as {
     dayOfWeek?: number;
     timeStart?: string;
     title?: string;
@@ -33,6 +33,7 @@ router.post('/', requireRole('admin', 'parent'), (req: AuthRequest, res: Respons
     color?: string;
     isRecurring?: boolean;
     specificDate?: number | null;
+    childId?: string | null;
   };
   const familyId = req.user!.familyId;
 
@@ -77,6 +78,7 @@ router.post('/', requireRole('admin', 'parent'), (req: AuthRequest, res: Respons
   db.insert(scheduleItems).values({
     id,
     familyId,
+    childId: childId ?? null,
     dayOfWeek: effectiveDayOfWeek,
     timeStart,
     title,
@@ -105,7 +107,7 @@ router.patch('/:id', requireRole('admin', 'parent'), (req: AuthRequest, res: Res
     return;
   }
 
-  const { dayOfWeek, timeStart, title, emoji, color, isRecurring, specificDate } = req.body as {
+  const { dayOfWeek, timeStart, title, emoji, color, isRecurring, specificDate, childId } = req.body as {
     dayOfWeek?: number;
     timeStart?: string;
     title?: string;
@@ -113,6 +115,7 @@ router.patch('/:id', requireRole('admin', 'parent'), (req: AuthRequest, res: Res
     color?: string;
     isRecurring?: boolean;
     specificDate?: number | null;
+    childId?: string | null;
   };
 
   if (timeStart !== undefined && !/^\d{2}:\d{2}$/.test(timeStart)) {
@@ -153,6 +156,7 @@ router.patch('/:id', requireRole('admin', 'parent'), (req: AuthRequest, res: Res
       ...(color !== undefined && { color }),
       ...(isRecurring !== undefined && { isRecurring }),
       ...(specificDate !== undefined && { specificDate }),
+      ...(childId !== undefined && { childId: childId ?? null }),
     })
     .where(and(eq(scheduleItems.id, id), eq(scheduleItems.familyId, familyId)))
     .run();

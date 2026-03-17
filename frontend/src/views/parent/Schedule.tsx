@@ -6,6 +6,7 @@ import { tw } from '../../lib/theme';
 
 interface ScheduleItem {
   id: string;
+  childId: string | null;
   dayOfWeek: number;
   timeStart: string;
   title: string;
@@ -13,6 +14,12 @@ interface ScheduleItem {
   color: string;
   isRecurring: boolean;
   specificDate: number | null;
+}
+
+interface ChildInfo {
+  id: string;
+  name: string;
+  emoji: string;
 }
 
 const DAYS = [0, 1, 2, 3, 4, 5, 6];
@@ -25,6 +32,7 @@ interface FormState {
   color: string;
   isRecurring: boolean;
   specificDate: string; // ISO date string for <input type="date">
+  childId: string;      // '' = whole family
 }
 
 const DEFAULT_FORM: FormState = {
@@ -35,6 +43,7 @@ const DEFAULT_FORM: FormState = {
   color: '#4A90D9',
   isRecurring: true,
   specificDate: '',
+  childId: '',
 };
 
 // ── Date helpers (mirrors backend lib/scheduleDate.ts) ────────────────────────
@@ -78,9 +87,10 @@ interface ItemFormProps {
   onSubmit: (e: React.FormEvent) => Promise<void>;
   submitLabel: string;
   onCancel: () => void;
+  childrenList: ChildInfo[];
 }
 
-function ItemForm({ form, onChange, onSubmit, submitLabel, onCancel }: ItemFormProps) {
+function ItemForm({ form, onChange, onSubmit, submitLabel, onCancel, childrenList }: ItemFormProps) {
   const { t } = useTranslation();
 
   return (
@@ -167,6 +177,23 @@ function ItemForm({ form, onChange, onSubmit, submitLabel, onCancel }: ItemFormP
         />
       </div>
 
+      {/* Assign to child (optional — empty = whole family) */}
+      {childrenList.length > 0 && (
+        <div className="flex items-center gap-2">
+          <label className={`text-sm ${tw.secondary} whitespace-nowrap`}>Assign to</label>
+          <select
+            value={form.childId}
+            onChange={(e) => onChange({ ...form, childId: e.target.value })}
+            className={tw.select}
+          >
+            <option value="">Everyone (whole family)</option>
+            {childrenList.map(c => (
+              <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
       <div className="flex gap-2 justify-end">
         <button type="button" onClick={onCancel} className={tw.btnCancel}>
           Cancel
@@ -184,9 +211,16 @@ function ItemForm({ form, onChange, onSubmit, submitLabel, onCancel }: ItemFormP
 export default function Schedule() {
   const { t } = useTranslation();
   const [items, setItems] = useState<ScheduleItem[]>([]);
+  const [children, setChildren] = useState<ChildInfo[]>([]);
   const [adding, setAdding] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
+
+  useEffect(() => {
+    client.get<{ data: ChildInfo[] }>('/children')
+      .then((res) => setChildren(res.data.data))
+      .catch(() => null);
+  }, []);
 
   async function load() {
     const res = await client.get<{ data: ScheduleItem[] }>('/schedule');
@@ -213,6 +247,7 @@ export default function Schedule() {
       specificDate: item.specificDate
         ? new Date(item.specificDate).toISOString().slice(0, 10)
         : '',
+      childId: item.childId ?? '',
     });
   }
 
@@ -231,6 +266,7 @@ export default function Schedule() {
       color: f.color,
       isRecurring: f.isRecurring,
       specificDate: specificDateMs,
+      childId: f.childId || null,
       ...(specificDateMs === null && { dayOfWeek: f.dayOfWeek }),
     };
   }
@@ -253,6 +289,12 @@ export default function Schedule() {
   async function handleDelete(id: string) {
     await client.delete(`/schedule/${id}`);
     await load();
+  }
+
+  function childName(childId: string | null): string | null {
+    if (!childId) return null;
+    const c = children.find(c => c.id === childId);
+    return c ? `${c.emoji} ${c.name}` : null;
   }
 
   // Group items by effective day for the current week
@@ -288,6 +330,7 @@ export default function Schedule() {
           onSubmit={handleAdd}
           submitLabel={t('parent.tasks.save')}
           onCancel={cancelForm}
+          childrenList={children}
         />
       )}
 
@@ -303,6 +346,7 @@ export default function Schedule() {
             onSubmit={handleEdit}
             submitLabel={t('parent.tasks.save')}
             onCancel={cancelForm}
+            childrenList={children}
           />
         </div>
       )}
@@ -335,6 +379,9 @@ export default function Schedule() {
                     </button>
                   </div>
                   <div className="text-gray-700 dark:text-gray-200 mt-0.5 leading-tight">{item.title}</div>
+                  {item.childId && (
+                    <div className={`text-[9px] ${tw.muted} mt-0.5`}>{childName(item.childId)}</div>
+                  )}
                 </div>
               ))}
             </div>

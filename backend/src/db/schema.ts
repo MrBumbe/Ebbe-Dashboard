@@ -79,6 +79,7 @@ export const taskCompletions = sqliteTable('task_completions', {
 export const scheduleItems = sqliteTable('schedule_items', {
   id:           text('id').primaryKey(),
   familyId:     text('family_id').notNull().references(() => families.id),
+  childId:      text('child_id'),                 // null = whole family; set = assigned to specific child
   dayOfWeek:    integer('day_of_week').notNull(), // 0=Mon … 6=Sun; computed from specificDate when isRecurring=false
   timeStart:    text('time_start').notNull(),     // "HH:MM"
   title:        text('title').notNull(),
