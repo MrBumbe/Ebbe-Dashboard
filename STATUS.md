@@ -197,6 +197,24 @@ Events design (intentional):
   - `routes/setup.ts`: also inserts a default child row at setup time for new installs.
 - The existing child now appears in the Children management page with name "Child" (editable) and the same kiosk URL as before.
 
+## Session 18 additions (2026-03-17)
+
+**Default language fix — English on new install:**
+
+Root cause: `i18n.ts` defaulted to `'sv'` when no localStorage key existed; `setup.ts` never wrote any language setting to the DB; child screen never loaded language from DB at all; Settings.tsx used wrong key `language` instead of `family.language`.
+
+Changes:
+- `frontend/src/i18n.ts`: default fallback changed from `'sv'` to `'en'`
+- `backend/src/routes/setup.ts`: seeds `{ key: 'family.language', value: '"en"' }` in settings table on first run
+- `backend/src/routes/settings.ts`: broadcasts `LANGUAGE_UPDATED` WS event to child connections when `family.language` key changes
+- `backend/src/routes/child.ts`: `/settings` endpoint now includes `language` field (reads `family.language`, fallback `'en'`)
+- `frontend/src/api/child.ts`: added `language: string` to `ChildSettings` interface
+- `frontend/src/api/websocket.ts`: added `LANGUAGE_UPDATED` to `WsMessage` union type
+- `frontend/src/views/child/ChildApp.tsx`: applies `i18n.changeLanguage()` on settings load; handles `LANGUAGE_UPDATED` WS event for immediate cross-screen update
+- `frontend/src/views/parent/Settings.tsx`: corrected key to `family.language`; reads persisted language from DB on mount so the UI button reflects the stored value
+
+Result: new installs default to English; parent can switch language in Settings; child screen updates immediately via WebSocket (no reload required).
+
 ## Session 17 additions (2026-03-17)
 
 - `CONTRIBUTING.md` created — public-facing contributor guide (bug reports, feature suggestions, translations, code, roadmap, dev setup, code style)

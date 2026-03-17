@@ -7,6 +7,7 @@ export type WsMessage =
   | { type: 'TASK_UPDATED'; payload: { taskId: string; action: string } }
   | { type: 'STARS_UPDATED'; payload: { balance: number } }
   | { type: 'LAYOUT_UPDATED' }
+  | { type: 'LANGUAGE_UPDATED'; payload: { language: string } }
   | { type: 'REWARD_REQUESTED'; payload: { requestId: string; rewardId: string; rewardTitle: string } }
   | { type: 'REQUEST_RESOLVED'; payload: { requestId: string; action: string } };
 

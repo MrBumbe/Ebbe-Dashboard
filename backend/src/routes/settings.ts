@@ -3,6 +3,7 @@ import { eq, and } from 'drizzle-orm';
 import { getDb } from '../db';
 import { settings } from '../db/schema';
 import { requireAuth, requireRole, AuthRequest } from '../middleware/auth';
+import { broadcastToFamily } from '../websocket';
 
 const router = Router();
 
@@ -77,6 +78,12 @@ router.put('/:key', requireRole('admin', 'parent'), (req: AuthRequest, res: Resp
       set: { value: serialized },
     })
     .run();
+
+  // Broadcast language changes to child screens so they update without a reload
+  if (key === 'family.language') {
+    const lang = typeof value === 'string' ? value : String(value);
+    broadcastToFamily(familyId, 'child', { type: 'LANGUAGE_UPDATED', payload: { language: lang } });
+  }
 
   res.json({ data: { key, value } });
 });

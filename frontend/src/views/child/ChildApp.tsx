@@ -4,6 +4,7 @@ import { useChildStore } from '../../store/useChildStore';
 import { childApi } from '../../api/child';
 import type { LayoutEntry } from '../../api/child';
 import { connectChildWs } from '../../api/websocket';
+import i18n from '../../i18n';
 import ChildHeader from './ChildHeader';
 import TaskList from './TaskList';
 import MoodCheckIn from './MoodCheckIn';
@@ -87,6 +88,7 @@ export default function ChildApp() {
       setHistoryEnabled(s.historyEnabled);
       setInactivitySecs(s.inactivitySeconds);
       setActiveMoods(s.activeMoods ?? undefined);
+      void i18n.changeLanguage(s.language);
     }).catch(() => { /* use defaults */ });
   }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -99,6 +101,7 @@ export default function ChildApp() {
       else if (msg.type === 'STARS_UPDATED') store.setBalance(msg.payload.balance);
       else if (msg.type === 'TASK_UPDATED') void childApi.getTasks(token).then(store.setTasks);
       else if (msg.type === 'LAYOUT_UPDATED') void childApi.getLayout(token).then(setLayout);
+      else if (msg.type === 'LANGUAGE_UPDATED') void i18n.changeLanguage(msg.payload.language);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);

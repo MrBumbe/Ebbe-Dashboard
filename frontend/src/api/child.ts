@@ -97,6 +97,7 @@ export interface ChildSettings {
   historyEnabled: boolean;
   inactivitySeconds: number;
   activeMoods: string[] | null;
+  language: string;
 }
 
 export const childApi = {

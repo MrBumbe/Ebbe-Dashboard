@@ -422,6 +422,7 @@ router.get('/settings', (req: ChildRequest, res: Response) => {
       historyEnabled: getSetting<boolean>('history.enabled', false),
       inactivitySeconds: getSetting<number>('inactivity.seconds', 45),
       activeMoods: getSetting<string[] | null>('mood.active', null),
+      language: getSetting<string>('family.language', 'en'),
     },
   });
 });

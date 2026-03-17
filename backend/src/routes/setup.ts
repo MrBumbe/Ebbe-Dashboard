@@ -7,7 +7,7 @@ import { Router, Request, Response } from 'express';
 import { randomUUID } from 'crypto';
 import { scryptSync, randomBytes } from 'crypto';
 import { getDb } from '../db';
-import { families, users, children, childLayouts } from '../db/schema';
+import { families, users, children, childLayouts, settings } from '../db/schema';
 
 const router = Router();
 
@@ -89,6 +89,9 @@ router.post('/', (req: Request, res: Response) => {
   for (const entry of layoutEntries) {
     db.insert(childLayouts).values({ familyId, ...entry }).run();
   }
+
+  // Seed default settings
+  db.insert(settings).values({ familyId, key: 'family.language', value: '"en"' }).run();
 
   res.status(201).json({
     data: {

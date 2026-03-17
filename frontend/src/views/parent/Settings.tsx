@@ -27,14 +27,21 @@ const ACCENT_COLOURS = [
 export default function Settings() {
   const { t } = useTranslation();
 
-  // Language
+  // Language — initialized from i18n (itself seeded from localStorage or DB on child load)
   const [lang, setLang] = useState(i18n.language.startsWith('sv') ? 'sv' : 'en');
+
+  // Sync lang state with the persisted DB value on mount
+  useEffect(() => {
+    client.get<{ data: { key: string; value: string } }>('/settings/family.language')
+      .then((res) => { setLang(res.data.data.value as string); })
+      .catch(() => { /* use i18n default */ });
+  }, []);
 
   function handleLang(l: string) {
     setLang(l);
     void i18n.changeLanguage(l);
     localStorage.setItem('ebbe_lang', l);
-    void client.put('/settings/language', { value: l });
+    void client.put('/settings/family.language', { value: l });
   }
 
   // Weather location search
