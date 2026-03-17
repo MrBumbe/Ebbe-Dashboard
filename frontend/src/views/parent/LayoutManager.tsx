@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import client from '../../api/client';
 import { tw } from '../../lib/theme';
+import { useAuthStore } from '../../store/useAuthStore';
 
 interface LayoutEntry {
   pageNumber: number;
@@ -28,16 +29,18 @@ const WIDGET_LABELS: Record<string, string> = {
 
 export default function LayoutManager() {
   const { t } = useTranslation();
+  const { activeChildId } = useAuthStore();
   const [layout, setLayout] = useState<LayoutEntry[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   async function load() {
-    const res = await client.get<{ data: LayoutEntry[] }>('/layouts');
+    const params = activeChildId ? { childId: activeChildId } : {};
+    const res = await client.get<{ data: LayoutEntry[] }>('/layouts', { params });
     setLayout(res.data.data);
   }
 
-  useEffect(() => { void load(); }, []);
+  useEffect(() => { void load(); }, [activeChildId]);
 
   function pages(): number[] {
     const nums = [...new Set(layout.map(e => e.pageNumber))].sort((a, b) => a - b);
@@ -77,7 +80,8 @@ export default function LayoutManager() {
     setSaving(true);
     setSaved(false);
     try {
-      await client.put('/layouts', layout);
+      // Send as { childId, entries } so backend knows which child's layout to save
+      await client.put('/layouts', { childId: activeChildId ?? '', entries: layout });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } finally {

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import client from '../../api/client';
 import EmojiPicker from '../../components/EmojiPicker';
 import { tw } from '../../lib/theme';
+import { useAuthStore } from '../../store/useAuthStore';
 
 interface EventItem {
   id: string;
@@ -10,13 +11,28 @@ interface EventItem {
   emoji: string;
   eventDate: number;
   isVisible: boolean;
+  childId: string | null;
+}
+
+interface ChildInfo {
+  id: string;
+  name: string;
+  emoji: string;
 }
 
 export default function Events() {
   const { t } = useTranslation();
+  const { activeChildId } = useAuthStore();
   const [events, setEvents] = useState<EventItem[]>([]);
+  const [children, setChildren] = useState<ChildInfo[]>([]);
   const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({ title: '', emoji: '🎉', eventDate: '', isVisible: true });
+  const [form, setForm] = useState({ title: '', emoji: '🎉', eventDate: '', isVisible: true, childId: '' });
+
+  useEffect(() => {
+    client.get<{ data: ChildInfo[] }>('/children')
+      .then((res) => setChildren(res.data.data))
+      .catch(() => null);
+  }, []);
 
   async function loadEvents() {
     try {
@@ -25,7 +41,7 @@ export default function Events() {
     } catch { /* ignore */ }
   }
 
-  useEffect(() => { void loadEvents(); }, []);
+  useEffect(() => { void loadEvents(); }, [activeChildId]);
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -34,9 +50,10 @@ export default function Events() {
       emoji: form.emoji,
       eventDate: new Date(form.eventDate).getTime(),
       isVisible: form.isVisible,
+      childId: form.childId || null,
     });
     setAdding(false);
-    setForm({ title: '', emoji: '🎉', eventDate: '', isVisible: true });
+    setForm({ title: '', emoji: '🎉', eventDate: '', isVisible: true, childId: '' });
     await loadEvents();
   }
 
@@ -48,6 +65,11 @@ export default function Events() {
   async function handleToggleVisible(ev: EventItem) {
     await client.patch(`/events/${ev.id}`, { isVisible: !ev.isVisible });
     await loadEvents();
+  }
+
+  function childName(childId: string | null) {
+    if (!childId) return null;
+    return children.find(c => c.id === childId)?.name ?? null;
   }
 
   return (
@@ -74,7 +96,7 @@ export default function Events() {
               className={`flex-1 ${tw.input}`}
             />
           </div>
-          <div className="flex gap-3 items-center">
+          <div className="flex gap-3 items-center flex-wrap">
             <input
               required
               type="date"
@@ -92,6 +114,20 @@ export default function Events() {
               Show on child screen
             </label>
           </div>
+          {/* Assign to child (optional — empty = whole family) */}
+          <div className="flex items-center gap-2">
+            <label className={`text-sm ${tw.secondary} whitespace-nowrap`}>Assign to</label>
+            <select
+              value={form.childId}
+              onChange={(e) => setForm({ ...form, childId: e.target.value })}
+              className={tw.select}
+            >
+              <option value="">Everyone (whole family)</option>
+              {children.map(c => (
+                <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>
+              ))}
+            </select>
+          </div>
           <div className="flex gap-2 justify-end">
             <button type="button" onClick={() => setAdding(false)} className={tw.btnCancel}>
               Cancel
@@ -107,12 +143,16 @@ export default function Events() {
         {events.map((ev) => {
           const date = new Date(ev.eventDate);
           const daysLeft = Math.ceil((ev.eventDate - Date.now()) / 86400000);
+          const assignedTo = childName(ev.childId);
           return (
             <div key={ev.id} className={`flex items-center gap-3 px-4 py-3 ${tw.listRow}`}>
               <span className="text-xl">{ev.emoji}</span>
               <div className="flex-1">
                 <p className={`text-sm font-medium ${tw.body}`}>{ev.title}</p>
-                <p className={tw.muted}>{date.toLocaleDateString()} · {daysLeft > 0 ? `in ${daysLeft} days` : 'today!'}</p>
+                <p className={tw.muted}>
+                  {date.toLocaleDateString()} · {daysLeft > 0 ? `in ${daysLeft} days` : 'today!'}
+                  {assignedTo && <span className="ml-2">· {assignedTo}</span>}
+                </p>
               </div>
               <button
                 onClick={() => void handleToggleVisible(ev)}

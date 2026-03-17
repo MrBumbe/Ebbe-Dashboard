@@ -92,6 +92,7 @@ export const scheduleItems = sqliteTable('schedule_items', {
 export const events = sqliteTable('events', {
   id:           text('id').primaryKey(),
   familyId:     text('family_id').notNull().references(() => families.id),
+  childId:      text('child_id'),               // null = whole family; set = assigned to specific child
   title:        text('title').notNull(),
   emoji:        text('emoji').notNull().default('🎉'),
   eventDate:    integer('event_date').notNull(), // unix ms; next occurrence date (kept in sync with specificDate for annual events)
@@ -103,6 +104,7 @@ export const events = sqliteTable('events', {
 export const moodLog = sqliteTable('mood_log', {
   id:           text('id').primaryKey(),
   familyId:     text('family_id').notNull().references(() => families.id),
+  childId:      text('child_id'),              // null = legacy (family-level); set = per-child
   mood:         text('mood', {
                   enum: ['happy', 'okay', 'sad', 'angry', 'tired', 'excited', 'anxious']
                 }).notNull(),
@@ -136,6 +138,7 @@ export const rewardTransactions = sqliteTable('reward_transactions', {
 export const rewardRequests = sqliteTable('reward_requests', {
   id:           text('id').primaryKey(),
   familyId:     text('family_id').notNull().references(() => families.id),
+  childId:      text('child_id'),              // which child made the request
   rewardId:     text('reward_id').notNull().references(() => rewards.id),
   status:       text('status', { enum: ['pending', 'approved', 'denied'] }).notNull().default('pending'),
   requestedAt:  integer('requested_at').notNull(),
@@ -164,15 +167,17 @@ export const modules = sqliteTable('modules', {
 // ── Child screen widget layout ───────────────────────────────
 // widgetId values: clock, weather, routine-morning, routine-evening, routine-custom,
 //   week-schedule, upcoming-event, mood-checkin, star-balance, timer-display
+// childId: '' = family-level default; actual childId = per-child layout
 export const childLayouts = sqliteTable('child_layouts', {
   familyId:    text('family_id').notNull().references(() => families.id),
+  childId:     text('child_id').notNull().default(''), // '' = family default
   pageNumber:  integer('page_number').notNull().default(1),
   widgetId:    text('widget_id').notNull(),
   order:       integer('order').notNull().default(0),
   isEnabled:   integer('is_enabled', { mode: 'boolean' }).notNull().default(true),
   config:      text('config').notNull().default('{}'), // JSON string, widget-specific overrides
 }, (t) => ({
-  pk: primaryKey({ columns: [t.familyId, t.pageNumber, t.widgetId] }),
+  pk: primaryKey({ columns: [t.familyId, t.childId, t.pageNumber, t.widgetId] }),
 }));
 
 // ── AI memory (v3 — tables created now, populated later) ────

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import client from '../../api/client';
 import EmojiPicker from '../../components/EmojiPicker';
 import { tw } from '../../lib/theme';
+import { useAuthStore } from '../../store/useAuthStore';
 
 interface Task {
   id: string;
@@ -171,6 +172,7 @@ function TaskForm({ form, onChange, onSubmit, submitLabel, error, onCancel }: Ta
 
 export default function Tasks() {
   const { t } = useTranslation();
+  const { activeChildId } = useAuthStore();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [adding, setAdding] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -179,11 +181,12 @@ export default function Tasks() {
   const [completingId, setCompletingId] = useState<string | null>(null);
 
   async function load() {
+    // Tasks are family-wide; the list doesn't change per child
     const res = await client.get<{ data: Task[] }>('/tasks');
     setTasks(res.data.data);
   }
 
-  useEffect(() => { void load(); }, []);
+  useEffect(() => { void load(); }, [activeChildId]);
 
   function parseDays(task: Task): number[] {
     try { return JSON.parse(task.daysOfWeek) as number[]; } catch { return [0,1,2,3,4,5,6]; }
@@ -262,7 +265,7 @@ export default function Tasks() {
   async function handleComplete(task: Task) {
     setCompletingId(task.id);
     try {
-      await client.post(`/tasks/${task.id}/complete`, {});
+      await client.post(`/tasks/${task.id}/complete`, { childId: activeChildId });
     } finally {
       setCompletingId(null);
       await load();

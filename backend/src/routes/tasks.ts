@@ -164,9 +164,11 @@ router.delete('/:id', (req: AuthRequest, res: Response) => {
 });
 
 // POST /api/v1/tasks/:id/complete — parent marks a task done (for non-visible tasks)
+// Body: optional childId — which child gets the credit
 router.post('/:id/complete', (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const familyId = req.user!.familyId;
+  const { childId } = req.body as { childId?: string };
   const db = getDb();
 
   const task = db.select().from(tasks)
@@ -188,6 +190,7 @@ router.post('/:id/complete', (req: AuthRequest, res: Response) => {
   db.insert(taskCompletions).values({
     id: completionId,
     familyId,
+    childId: childId ?? null,
     taskId: id,
     completedAt: now,
     starsAwarded: task.starValue,
@@ -196,6 +199,7 @@ router.post('/:id/complete', (req: AuthRequest, res: Response) => {
   db.insert(rewardTransactions).values({
     id: randomUUID(),
     familyId,
+    childId: childId ?? null,
     type: 'earn',
     amount: task.starValue,
     description: task.title,
@@ -203,8 +207,13 @@ router.post('/:id/complete', (req: AuthRequest, res: Response) => {
     createdAt: now,
   }).run();
 
-  // Recalculate balance and broadcast to child screen
-  const txRows = db.select().from(rewardTransactions).where(eq(rewardTransactions.familyId, familyId)).all();
+  // Recalculate balance scoped to the child and broadcast
+  const txRows = db.select().from(rewardTransactions)
+    .where(and(
+      eq(rewardTransactions.familyId, familyId),
+      ...(childId ? [eq(rewardTransactions.childId, childId)] : []),
+    ))
+    .all();
   const balance = txRows.reduce((acc, r) => r.type === 'earn' ? acc + r.amount : acc - r.amount, 0);
   broadcastToFamily(familyId, 'all', { type: 'STARS_UPDATED', payload: { balance } });
   broadcastToFamily(familyId, 'child', { type: 'TASK_UPDATED', payload: { taskId: id, action: 'completed' } });

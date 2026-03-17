@@ -6,6 +6,7 @@ import {
   tasks, taskCompletions, scheduleItems, events, moodLog,
   rewardTransactions, rewards, rewardRequests, modules, settings, childLayouts, children,
 } from '../db/schema';
+import { isNull, or } from 'drizzle-orm';
 import { requireChildToken, ChildRequest } from '../middleware/childAuth';
 import { broadcastToFamily } from '../websocket';
 import { resolveItemsForWeek } from '../lib/scheduleDate';
@@ -184,13 +185,20 @@ router.get('/schedule', (req: ChildRequest, res: Response) => {
   res.json({ data: resolved });
 });
 
-// GET /api/v1/child/events — upcoming visible events
+// GET /api/v1/child/events — upcoming visible events (family-wide OR assigned to this child)
 router.get('/events', (req: ChildRequest, res: Response) => {
   const db = getDb();
   const familyId = req.familyId!;
+  const childId = req.childId;
 
   const rows = db.select().from(events)
-    .where(and(eq(events.familyId, familyId), eq(events.isVisible, true), gte(events.eventDate, Date.now())))
+    .where(and(
+      eq(events.familyId, familyId),
+      eq(events.isVisible, true),
+      gte(events.eventDate, Date.now()),
+      // Show family-wide events (childId IS NULL) OR events assigned to this child
+      childId ? or(isNull(events.childId), eq(events.childId, childId)) : isNull(events.childId),
+    ))
     .orderBy(asc(events.eventDate))
     .all();
 
@@ -278,6 +286,7 @@ router.post('/rewards/:id/request', (req: ChildRequest, res: Response) => {
   db.insert(rewardRequests).values({
     id: requestId,
     familyId,
+    childId: req.childId ?? null,
     rewardId: id,
     status: 'pending',
     requestedAt: Date.now(),
@@ -344,12 +353,21 @@ router.post('/mood', (req: ChildRequest, res: Response) => {
 // GET /api/v1/child/layout — widget layout for child screen
 router.get('/layout', (req: ChildRequest, res: Response) => {
   const familyId = req.familyId!;
+  const childId = req.childId ?? '';
   const db = getDb();
 
-  const rows = db.select().from(childLayouts)
-    .where(eq(childLayouts.familyId, familyId))
+  // Try per-child layout first; fall back to family default (childId = '')
+  let rows = db.select().from(childLayouts)
+    .where(and(eq(childLayouts.familyId, familyId), eq(childLayouts.childId, childId)))
     .orderBy(asc(childLayouts.pageNumber), asc(childLayouts.order))
     .all();
+
+  if (rows.length === 0 && childId !== '') {
+    rows = db.select().from(childLayouts)
+      .where(and(eq(childLayouts.familyId, familyId), eq(childLayouts.childId, '')))
+      .orderBy(asc(childLayouts.pageNumber), asc(childLayouts.order))
+      .all();
+  }
 
   if (rows.length === 0) {
     // Return default layout (not persisted — saved only when parent customises)

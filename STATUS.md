@@ -1,6 +1,6 @@
 # Ebbe — Build Status
 
-Last updated: 2026-03-16 (session 11)
+Last updated: 2026-03-17 (session 12)
 
 ---
 
@@ -126,6 +126,40 @@ Everything through Fix 13 + session 6 fixes is shipped.
 - Bug 5: Schedule items are now editable — click any item to open an inline edit form. Title is no longer truncated.
 - Bug 6: Layout manager now shows widgets (backend returns DEFAULT_LAYOUT when DB is empty; setup seeds it; header widgets filtered from LayoutManager UI).
 - New: Redesigned child screen header — always-visible 3-column header (weather, clock+analog, stars) with 3 levels based on widget count. `AnalogClock.tsx` extracted as reusable component. `ChildHeader.tsx` created.
+
+## Session 12 fixes (2026-03-17)
+
+**Active-child scoping — full parent panel data isolation:**
+
+Store:
+- `useAuthStore`: added `activeChildId: string | null` and `setActiveChildId(id)`. Persists to `localStorage`. Hydrated on page load.
+- `ChildSelector` in `ParentApp.tsx`: now calls `setActiveChildId` from the store on selection (previously was local state only). On first load auto-selects `children[0]` if no stored selection.
+
+Database migration `0005_child_scoped_data`:
+- Added `child_id` (nullable) to `mood_log` — per-child mood history
+- Added `child_id` (nullable) to `reward_requests` — tracks which child made each request
+- Added `child_id` (nullable) to `events` — optional child assignment
+- Recreated `child_layouts` table: added `child_id TEXT NOT NULL DEFAULT ''` to the primary key `(family_id, child_id, page_number, widget_id)`. Empty string = family-level default; child UUID = per-child layout. Existing rows migrated with `child_id = ''`.
+
+Backend route changes:
+- `routes/mood.ts`: `GET /mood` accepts `?childId=` to scope results; `POST /mood` saves `childId` from body
+- `routes/rewards.ts`: `GET /balance`, `GET /transactions`, `GET /requests` all accept `?childId=`; `POST /adjust` accepts `childId` in body; `PATCH /requests/:id` (approve) scopes balance check and deduction to `request.childId`; all new transactions include `childId`
+- `routes/layouts.ts`: `GET /layouts` accepts `?childId=`, falls back to family default; `PUT /layouts` accepts `{ childId, entries }` body; `PATCH /layouts/:widgetId` accepts `childId` in body
+- `routes/tasks.ts`: `POST /:id/complete` accepts `childId` in body, records it on completion and transaction
+- `routes/child.ts`: `rewardRequests` insert now saves `req.childId`; `/events` filters by `childId IS NULL OR childId = req.childId`; `/layout` queries per-child first, falls back to family default
+- `routes/events.ts`: `POST` and `PATCH` accept optional `childId`; `GET` accepts optional `?childId=` filter
+
+Frontend view changes (all re-fetch when `activeChildId` changes):
+- `Tasks.tsx`: passes `childId: activeChildId` to parent-complete endpoint
+- `Rewards.tsx`: passes `{ childId }` params to balance/transactions/requests; passes `childId` to adjust
+- `MoodLog.tsx`: passes `{ childId }` as query param
+- `LayoutManager.tsx`: passes `{ childId }` to GET; sends `{ childId, entries }` to PUT
+- `Events.tsx`: added "Assign to" dropdown in add form (empty = whole family); shows assigned child name in list
+
+Events design (intentional):
+- Family-wide events (`childId = null`) appear on ALL child screens
+- Child-assigned events (`childId = <uuid>`) appear only on that child's screen
+- Parent Events view shows all events regardless of assignment
 
 ## Session 11 fixes (2026-03-16)
 

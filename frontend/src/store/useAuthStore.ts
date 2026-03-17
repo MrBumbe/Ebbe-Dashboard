@@ -26,11 +26,13 @@ interface AuthState {
   mustChangePassword: boolean;
   darkMode: boolean;
   isLoggedIn: boolean;
+  activeChildId: string | null;
   setAuth: (accessToken: string, refreshToken: string) => void;
   clearAuth: () => void;
   hydrate: () => void;
   setDarkMode: (dark: boolean) => void;
   setMustChangePassword: (value: boolean) => void;
+  setActiveChildId: (id: string) => void;
 }
 
 function applyDarkMode(dark: boolean) {
@@ -50,6 +52,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   mustChangePassword: false,
   darkMode: false,
   isLoggedIn: false,
+  activeChildId: localStorage.getItem('ebbe_active_child'),
 
   setAuth(accessToken, refreshToken) {
     const payload = decodeToken(accessToken);
@@ -77,6 +80,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       name: null,
       mustChangePassword: false,
       isLoggedIn: false,
+      activeChildId: null,
     });
   },
 
@@ -111,5 +115,10 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setMustChangePassword(value: boolean) {
     set({ mustChangePassword: value });
+  },
+
+  setActiveChildId(id: string) {
+    localStorage.setItem('ebbe_active_child', id);
+    set({ activeChildId: id });
   },
 }));

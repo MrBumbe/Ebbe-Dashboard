@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import client from '../../api/client';
 import { tw } from '../../lib/theme';
+import { useAuthStore } from '../../store/useAuthStore';
 
 interface MoodEntry {
   id: string;
@@ -17,11 +18,15 @@ const MOOD_EMOJI: Record<string, string> = {
 
 export default function MoodLog() {
   const { t } = useTranslation();
+  const { activeChildId } = useAuthStore();
   const [entries, setEntries] = useState<MoodEntry[]>([]);
 
   useEffect(() => {
-    client.get<{ data: MoodEntry[] }>('/mood').then((res) => setEntries(res.data.data)).catch(() => null);
-  }, []);
+    const params = activeChildId ? { childId: activeChildId } : {};
+    client.get<{ data: MoodEntry[] }>('/mood', { params })
+      .then((res) => setEntries(res.data.data))
+      .catch(() => null);
+  }, [activeChildId]);
 
   return (
     <div>

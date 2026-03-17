@@ -1,5 +1,5 @@
 import { Router, Response } from 'express';
-import { eq, desc } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { getDb } from '../db';
 import { moodLog } from '../db/schema';
@@ -12,22 +12,26 @@ router.use(requireAuth);
 const VALID_MOODS = ['happy', 'okay', 'sad', 'angry', 'tired', 'excited', 'anxious'] as const;
 type Mood = typeof VALID_MOODS[number];
 
-// GET /api/v1/mood — list mood log (most recent first)
+// GET /api/v1/mood — list mood log (most recent first); optional ?childId= filter
 router.get('/', (req: AuthRequest, res: Response) => {
   const db = getDb();
   const familyId = req.user!.familyId;
+  const childId = req.query.childId as string | undefined;
 
   const rows = db.select().from(moodLog)
-    .where(eq(moodLog.familyId, familyId))
+    .where(and(
+      eq(moodLog.familyId, familyId),
+      ...(childId ? [eq(moodLog.childId, childId)] : []),
+    ))
     .orderBy(desc(moodLog.loggedAt))
     .all();
 
   res.json({ data: rows });
 });
 
-// POST /api/v1/mood — log a mood check-in
+// POST /api/v1/mood — log a mood check-in; optional childId in body
 router.post('/', (req: AuthRequest, res: Response) => {
-  const { mood, note } = req.body as { mood?: string; note?: string };
+  const { mood, note, childId } = req.body as { mood?: string; note?: string; childId?: string };
   const familyId = req.user!.familyId;
 
   if (!mood) {
@@ -50,6 +54,7 @@ router.post('/', (req: AuthRequest, res: Response) => {
   db.insert(moodLog).values({
     id,
     familyId,
+    childId: childId ?? null,
     mood: mood as Mood,
     loggedAt: Date.now(),
     note: note ?? null,

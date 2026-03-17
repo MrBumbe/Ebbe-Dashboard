@@ -10,55 +10,61 @@ const router = Router();
 
 router.use(requireAuth);
 
-// GET /api/v1/rewards/balance — current star balance for the family
+function calcBalance(rows: Array<{ type: string; amount: number }>) {
+  return rows.reduce((acc, r) => r.type === 'earn' ? acc + r.amount : acc - r.amount, 0);
+}
+
+// GET /api/v1/rewards/balance — current star balance; optional ?childId= filter
 router.get('/balance', (req: AuthRequest, res: Response) => {
   const db = getDb();
   const familyId = req.user!.familyId;
+  const childId = req.query.childId as string | undefined;
 
   const rows = db.select().from(rewardTransactions)
-    .where(eq(rewardTransactions.familyId, familyId))
+    .where(and(
+      eq(rewardTransactions.familyId, familyId),
+      ...(childId ? [eq(rewardTransactions.childId, childId)] : []),
+    ))
     .all();
 
-  const balance = rows.reduce((acc, row) => {
-    return row.type === 'earn' ? acc + row.amount : acc - row.amount;
-  }, 0);
-
-  res.json({ data: { balance } });
+  res.json({ data: { balance: calcBalance(rows) } });
 });
 
-// GET /api/v1/rewards/transactions — star ledger history
+// GET /api/v1/rewards/transactions — star ledger history; optional ?childId= filter
 router.get('/transactions', (req: AuthRequest, res: Response) => {
   const db = getDb();
   const familyId = req.user!.familyId;
+  const childId = req.query.childId as string | undefined;
 
   const rows = db.select().from(rewardTransactions)
-    .where(eq(rewardTransactions.familyId, familyId))
+    .where(and(
+      eq(rewardTransactions.familyId, familyId),
+      ...(childId ? [eq(rewardTransactions.childId, childId)] : []),
+    ))
     .orderBy(desc(rewardTransactions.createdAt))
     .all();
 
   res.json({ data: rows });
 });
 
-// GET /api/v1/rewards/requests — pending child redemption requests
+// GET /api/v1/rewards/requests — pending child redemption requests; optional ?childId= filter
 router.get('/requests', (req: AuthRequest, res: Response) => {
   const db = getDb();
   const familyId = req.user!.familyId;
+  const childId = req.query.childId as string | undefined;
 
   const requests = db.select().from(rewardRequests)
-    .where(eq(rewardRequests.familyId, familyId))
+    .where(and(
+      eq(rewardRequests.familyId, familyId),
+      ...(childId ? [eq(rewardRequests.childId, childId)] : []),
+    ))
     .orderBy(desc(rewardRequests.requestedAt))
     .all();
 
-  // Join reward details
   const allRewards = db.select().from(rewards).where(eq(rewards.familyId, familyId)).all();
   const rewardMap = new Map(allRewards.map(r => [r.id, r]));
 
-  const enriched = requests.map(r => ({
-    ...r,
-    reward: rewardMap.get(r.rewardId) ?? null,
-  }));
-
-  res.json({ data: enriched });
+  res.json({ data: requests.map(r => ({ ...r, reward: rewardMap.get(r.rewardId) ?? null })) });
 });
 
 // PATCH /api/v1/rewards/requests/:id — approve or deny a request
@@ -100,19 +106,26 @@ router.patch('/requests/:id', requireRole('admin', 'parent'), (req: AuthRequest,
       return;
     }
 
-    // Check balance
-    const txRows = db.select().from(rewardTransactions).where(eq(rewardTransactions.familyId, familyId)).all();
-    const balance = txRows.reduce((acc, r) => r.type === 'earn' ? acc + r.amount : acc - r.amount, 0);
+    // Check balance scoped to the requesting child (when childId is known)
+    const childId = request.childId ?? undefined;
+    const txRows = db.select().from(rewardTransactions)
+      .where(and(
+        eq(rewardTransactions.familyId, familyId),
+        ...(childId ? [eq(rewardTransactions.childId, childId)] : []),
+      ))
+      .all();
+    const balance = calcBalance(txRows);
 
     if (balance < reward.starCost) {
       res.status(400).json({ error: { code: 'INSUFFICIENT_STARS', message: `Need ${reward.starCost} stars, have ${balance}` } });
       return;
     }
 
-    // Deduct stars
+    // Deduct stars (scoped to child)
     db.insert(rewardTransactions).values({
       id: randomUUID(),
       familyId,
+      childId: childId ?? null,
       type: 'redeem',
       amount: reward.starCost,
       description: `Redeemed: ${reward.title}`,
@@ -120,9 +133,14 @@ router.patch('/requests/:id', requireRole('admin', 'parent'), (req: AuthRequest,
       createdAt: now,
     }).run();
 
-    // Recalculate and broadcast
-    const newTxRows = db.select().from(rewardTransactions).where(eq(rewardTransactions.familyId, familyId)).all();
-    const newBalance = newTxRows.reduce((acc, r) => r.type === 'earn' ? acc + r.amount : acc - r.amount, 0);
+    // Recalculate and broadcast new child balance
+    const newTxRows = db.select().from(rewardTransactions)
+      .where(and(
+        eq(rewardTransactions.familyId, familyId),
+        ...(childId ? [eq(rewardTransactions.childId, childId)] : []),
+      ))
+      .all();
+    const newBalance = calcBalance(newTxRows);
     broadcastToFamily(familyId, 'all', { type: 'STARS_UPDATED', payload: { balance: newBalance } });
   }
 
@@ -131,7 +149,6 @@ router.patch('/requests/:id', requireRole('admin', 'parent'), (req: AuthRequest,
     .where(eq(rewardRequests.id, id))
     .run();
 
-  // Notify child of decision
   broadcastToFamily(familyId, 'child', {
     type: 'REQUEST_RESOLVED',
     payload: { requestId: id, action },
@@ -140,9 +157,9 @@ router.patch('/requests/:id', requireRole('admin', 'parent'), (req: AuthRequest,
   res.json({ data: { id, status: action === 'approve' ? 'approved' : 'denied' } });
 });
 
-// POST /api/v1/rewards/adjust — manual star adjustment by parent
+// POST /api/v1/rewards/adjust — manual star adjustment; requires childId in body
 router.post('/adjust', requireRole('admin', 'parent'), (req: AuthRequest, res: Response) => {
-  const { amount, description } = req.body as { amount?: number; description?: string };
+  const { amount, description, childId } = req.body as { amount?: number; description?: string; childId?: string };
   const familyId = req.user!.familyId;
 
   if (amount === undefined || !description) {
@@ -160,6 +177,7 @@ router.post('/adjust', requireRole('admin', 'parent'), (req: AuthRequest, res: R
   db.insert(rewardTransactions).values({
     id: randomUUID(),
     familyId,
+    childId: childId ?? null,
     type: amount > 0 ? 'earn' : 'redeem',
     amount: Math.abs(amount),
     description,
@@ -167,15 +185,20 @@ router.post('/adjust', requireRole('admin', 'parent'), (req: AuthRequest, res: R
     createdAt: now,
   }).run();
 
-  const txRows = db.select().from(rewardTransactions).where(eq(rewardTransactions.familyId, familyId)).all();
-  const balance = txRows.reduce((acc, r) => r.type === 'earn' ? acc + r.amount : acc - r.amount, 0);
+  const txRows = db.select().from(rewardTransactions)
+    .where(and(
+      eq(rewardTransactions.familyId, familyId),
+      ...(childId ? [eq(rewardTransactions.childId, childId)] : []),
+    ))
+    .all();
+  const balance = calcBalance(txRows);
 
   broadcastToFamily(familyId, 'all', { type: 'STARS_UPDATED', payload: { balance } });
 
   res.status(201).json({ data: { balance } });
 });
 
-// GET /api/v1/rewards — list reward catalog
+// GET /api/v1/rewards — list reward catalog (family-wide)
 router.get('/', (req: AuthRequest, res: Response) => {
   const db = getDb();
   const familyId = req.user!.familyId;

@@ -29,16 +29,21 @@ interface ChildInfo {
 
 function ChildSelector() {
   const { t } = useTranslation();
+  const { activeChildId, setActiveChildId } = useAuthStore();
   const [children, setChildren] = useState<ChildInfo[]>([]);
-  const [activeId, setActiveId] = useState<string | null>(() => localStorage.getItem('ebbe_active_child'));
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     client.get<{ data: ChildInfo[] }>('/children').then((res) => {
-      setChildren(res.data.data);
+      const list = res.data.data;
+      setChildren(list);
+      // If no active child is selected yet, default to the first child
+      if (!activeChildId && list.length > 0) {
+        setActiveChildId(list[0].id);
+      }
     }).catch(() => {/* ignore */});
-  }, []);
+  }, [activeChildId, setActiveChildId]);
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -50,11 +55,10 @@ function ChildSelector() {
 
   if (children.length === 0) return null;
 
-  const active = children.find((c) => c.id === activeId) ?? children[0];
+  const active = children.find((c) => c.id === activeChildId) ?? children[0];
 
   function select(id: string) {
-    setActiveId(id);
-    localStorage.setItem('ebbe_active_child', id);
+    setActiveChildId(id);
     setOpen(false);
   }
 
@@ -74,7 +78,7 @@ function ChildSelector() {
             <button
               key={c.id}
               onClick={() => select(c.id)}
-              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-700 ${c.id === active.id ? 'font-semibold text-blue-700 dark:text-blue-400' : 'text-gray-700 dark:text-gray-200'}`}
+              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-700 ${c.id === (activeChildId ?? children[0]?.id) ? 'font-semibold text-blue-700 dark:text-blue-400' : 'text-gray-700 dark:text-gray-200'}`}
             >
               <span>{c.emoji}</span>
               <span>{c.name}</span>

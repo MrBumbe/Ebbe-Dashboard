@@ -1,5 +1,5 @@
 import { Router, Response } from 'express';
-import { eq, and, asc } from 'drizzle-orm';
+import { eq, and, asc, isNull, or } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { getDb } from '../db';
 import { events } from '../db/schema';
@@ -8,20 +8,29 @@ import { requireAuth, requireRole, AuthRequest } from '../middleware/auth';
 const router = Router();
 router.use(requireAuth);
 
-// GET /api/v1/events
+// GET /api/v1/events — list events; optional ?childId= to show child-specific + family-wide
 router.get('/', (req: AuthRequest, res: Response) => {
   const db = getDb();
+  const familyId = req.user!.familyId;
+  const childId = req.query.childId as string | undefined;
+
   const rows = db.select().from(events)
-    .where(eq(events.familyId, req.user!.familyId))
+    .where(and(
+      eq(events.familyId, familyId),
+      // If childId provided: show family-wide (null) + child-specific; else show all
+      childId ? or(isNull(events.childId), eq(events.childId, childId)) : undefined,
+    ))
     .orderBy(asc(events.eventDate))
     .all();
+
   res.json({ data: rows });
 });
 
-// POST /api/v1/events
+// POST /api/v1/events — create event; optional childId to assign to a specific child
 router.post('/', requireRole('admin', 'parent'), (req: AuthRequest, res: Response) => {
-  const { title, emoji, eventDate, isVisible, specificDate } = req.body as {
-    title?: string; emoji?: string; eventDate?: number; isVisible?: boolean; specificDate?: number | null;
+  const { title, emoji, eventDate, isVisible, specificDate, childId } = req.body as {
+    title?: string; emoji?: string; eventDate?: number; isVisible?: boolean;
+    specificDate?: number | null; childId?: string | null;
   };
   const familyId = req.user!.familyId;
 
@@ -33,7 +42,9 @@ router.post('/', requireRole('admin', 'parent'), (req: AuthRequest, res: Respons
   const db = getDb();
   const id = randomUUID();
   db.insert(events).values({
-    id, familyId, title,
+    id, familyId,
+    childId: childId ?? null,
+    title,
     emoji: emoji ?? '🎉',
     eventDate,
     isVisible: isVisible ?? true,
@@ -57,8 +68,9 @@ router.patch('/:id', requireRole('admin', 'parent'), (req: AuthRequest, res: Res
     return;
   }
 
-  const { title, emoji, eventDate, isVisible, specificDate } = req.body as {
-    title?: string; emoji?: string; eventDate?: number; isVisible?: boolean; specificDate?: number | null;
+  const { title, emoji, eventDate, isVisible, specificDate, childId } = req.body as {
+    title?: string; emoji?: string; eventDate?: number; isVisible?: boolean;
+    specificDate?: number | null; childId?: string | null;
   };
 
   db.update(events).set({
@@ -67,6 +79,7 @@ router.patch('/:id', requireRole('admin', 'parent'), (req: AuthRequest, res: Res
     ...(eventDate !== undefined && { eventDate }),
     ...(isVisible !== undefined && { isVisible }),
     ...(specificDate !== undefined && { specificDate }),
+    ...(childId !== undefined && { childId }),
   }).where(and(eq(events.id, id), eq(events.familyId, familyId))).run();
 
   res.json({ data: db.select().from(events).where(eq(events.id, id)).get() });

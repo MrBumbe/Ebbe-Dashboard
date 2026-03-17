@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import client from '../../api/client';
 import EmojiPicker from '../../components/EmojiPicker';
 import { tw } from '../../lib/theme';
+import { useAuthStore } from '../../store/useAuthStore';
 
 interface Reward {
   id: string;
@@ -22,6 +23,7 @@ interface RewardRequest {
 
 export default function Rewards() {
   const { t } = useTranslation();
+  const { activeChildId } = useAuthStore();
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [requests, setRequests] = useState<RewardRequest[]>([]);
   const [balance, setBalance] = useState(0);
@@ -37,11 +39,12 @@ export default function Rewards() {
   const [adjusting, setAdjusting] = useState(false);
 
   async function load() {
+    const params = activeChildId ? { childId: activeChildId } : {};
     const [r, b, rq, tx] = await Promise.all([
       client.get<{ data: Reward[] }>('/rewards'),
-      client.get<{ data: { balance: number } }>('/rewards/balance'),
-      client.get<{ data: RewardRequest[] }>('/rewards/requests'),
-      client.get<{ data: Array<{ id: string; type: 'earn' | 'redeem'; amount: number; description: string; createdAt: number }> }>('/rewards/transactions'),
+      client.get<{ data: { balance: number } }>('/rewards/balance', { params }),
+      client.get<{ data: RewardRequest[] }>('/rewards/requests', { params }),
+      client.get<{ data: Array<{ id: string; type: 'earn' | 'redeem'; amount: number; description: string; createdAt: number }> }>('/rewards/transactions', { params }),
     ]);
     setRewards(r.data.data);
     setBalance(b.data.data.balance);
@@ -49,7 +52,7 @@ export default function Rewards() {
     setTransactions(tx.data.data.slice(0, 10));
   }
 
-  useEffect(() => { void load(); }, []);
+  useEffect(() => { void load(); }, [activeChildId]);
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -94,7 +97,7 @@ export default function Rewards() {
     }
     setAdjusting(true);
     try {
-      await client.post('/rewards/adjust', { amount, description: adjustDesc.trim() });
+      await client.post('/rewards/adjust', { amount, description: adjustDesc.trim(), childId: activeChildId });
       setAdjustAmount('');
       setAdjustDesc('');
       await load();
