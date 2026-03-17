@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { config } from '../config';
+import { getJwtSecret, getJwtRefreshSecret } from './secrets';
 
 export interface JwtPayload {
   userId: string;
@@ -10,16 +11,16 @@ export interface JwtPayload {
 }
 
 export function signAccessToken(payload: JwtPayload): string {
-  return jwt.sign(payload, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: config.jwtExpiresIn });
 }
 
 export function signRefreshToken(payload: JwtPayload): string {
-  return jwt.sign(payload, config.jwtRefreshSecret, { expiresIn: config.jwtRefreshExpiresIn });
+  return jwt.sign(payload, getJwtRefreshSecret(), { expiresIn: config.jwtRefreshExpiresIn });
 }
 
 export function verifyAccessToken(token: string): JwtPayload | null {
   try {
-    return jwt.verify(token, config.jwtSecret) as JwtPayload;
+    return jwt.verify(token, getJwtSecret()) as JwtPayload;
   } catch {
     return null;
   }
@@ -27,7 +28,7 @@ export function verifyAccessToken(token: string): JwtPayload | null {
 
 export function verifyRefreshToken(token: string): JwtPayload | null {
   try {
-    return jwt.verify(token, config.jwtRefreshSecret) as JwtPayload;
+    return jwt.verify(token, getJwtRefreshSecret()) as JwtPayload;
   } catch {
     return null;
   }

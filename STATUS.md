@@ -1,6 +1,6 @@
 # Ebbe — Build Status
 
-Last updated: 2026-03-17 (session 15)
+Last updated: 2026-03-17 (session 19)
 
 ---
 
@@ -29,7 +29,7 @@ Last updated: 2026-03-17 (session 15)
 | `routes/settings.ts` | ✅ Done | `GET /`, `GET /:key`, `PUT /:key`, `DELETE /:key` |
 | `routes/events.ts` | ✅ Done | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id` |
 | `routes/child.ts` | ✅ Done | tasks (day/time filtered), complete, schedule (child-scoped), events (child-scoped), balance, transactions, rewards, reward requests, mood status/log (child-scoped cooldown), layout, settings (bundled), theme, weather |
-| `routes/setup.ts` | ✅ Done | First-run setup endpoint |
+| `routes/setup.ts` | ✅ Done | `GET /status` (configured?), `POST /` first-run setup (accepts adminName + language) |
 | `routes/users.ts` | ✅ Done | `GET /` (admin), `GET /me`, `POST /invite` (admin), `POST /join` (public), `PATCH /me/password`, `PATCH /me/profile`, `PATCH /:id` (admin), `DELETE /:id` (admin), `POST /:id/reset-password` (admin) |
 | `routes/family.ts` | ✅ Done | `GET /`, `PATCH /` (admin) — get/update family name |
 | `routes/children.ts` | ✅ Done | `GET /`, `POST /`, `PATCH /:id`, `DELETE /:id` — per-child profiles with unique childTokens |
@@ -47,8 +47,9 @@ Last updated: 2026-03-17 (session 15)
 | `middleware/errors.ts` | ✅ Done | Global Express error handler |
 | `lib/jwt.ts` | ✅ Done | sign/verify access + refresh tokens |
 | `lib/crypto.ts` | ✅ Done | Token generation utils |
-| `config.ts` | ✅ Done | Env var loading + validation |
-| `index.ts` | ✅ Done | All routes mounted including /api/v1/layouts |
+| `config.ts` | ✅ Done | Env var loading; JWT secrets removed (now in `lib/secrets.ts`) |
+| `lib/secrets.ts` | ✅ Done | JWT secret auto-generation: env vars → DB → generate |
+| `index.ts` | ✅ Done | All routes mounted; `loadSecrets()` called first; `GET /api/v1/system/info` for LAN addresses; first-run banner |
 | `websocket/index.ts` | ✅ Done | WS server + broadcastToFamily helper |
 | `modules/weather-openmeteo/` | ✅ Done | Open-Meteo, 10min cache |
 
@@ -75,6 +76,7 @@ Last updated: 2026-03-17 (session 15)
 | `views/child/WeekSchedule.tsx` | ✅ Done | Starts from today; compact mode |
 | `views/child/UpcomingEvent.tsx` | ✅ Done | Countdown in days |
 | `views/child/TimerAlert.tsx` | ✅ Done | Fullscreen / minimized bar; Web Audio chime |
+| `views/SetupWizard.tsx` | ✅ Done | 4+1 step first-run wizard: welcome, family name, admin account, language, success+URLs |
 | `views/parent/Login.tsx` | ✅ Done | |
 | `views/parent/ParentApp.tsx` | ✅ Done | Sidebar nav + Layout entry |
 | `views/parent/Dashboard.tsx` | ✅ Done | |
@@ -196,6 +198,26 @@ Events design (intentional):
   - `db/index.ts`: startup fixup — after migrations, any family with no `children` rows gets a default child record created using `families.childToken`. Runs once and is idempotent.
   - `routes/setup.ts`: also inserts a default child row at setup time for new installs.
 - The existing child now appears in the Children management page with name "Child" (editable) and the same kiosk URL as before.
+
+## Session 19 additions (2026-03-17)
+
+**First-run setup wizard — zero .env required:**
+
+- `backend/src/lib/secrets.ts` (NEW) — JWT secret auto-generation. On startup: if `JWT_SECRET` / `JWT_REFRESH_SECRET` env vars are set, use them. Otherwise load from `secrets` table in SQLite (or generate and store fresh `crypto.randomBytes(32).toString('hex')` values on very first run).
+- `backend/src/config.ts` — removed `require_env('JWT_SECRET')` / `require_env('JWT_REFRESH_SECRET')`; secrets are now managed by `lib/secrets.ts`
+- `backend/src/lib/jwt.ts` — replaced `config.jwtSecret/jwtRefreshSecret` with `getJwtSecret()` / `getJwtRefreshSecret()` from `lib/secrets`
+- `backend/src/index.ts` — calls `loadSecrets(config.databasePath)` before anything else; added `GET /api/v1/system/info` (returns LAN IPv4 addresses filtered to 192.168/10.x, excluding 127.x loopback and 172.x Docker); prints first-run banner if no family exists yet
+- `backend/src/routes/setup.ts` — added `GET /api/v1/setup/status` → `{ data: { configured: boolean } }`; POST now accepts `adminName` (used as user display name) and `language` ('en'|'sv', seeds `family.language` setting)
+- `frontend/src/App.tsx` — on load calls `GET /api/v1/setup/status`; if not configured, renders SetupWizard at `/setup` and redirects all other paths there; if configured, redirects `/setup` → `/parent`
+- `frontend/src/views/SetupWizard.tsx` (NEW) — 4+1 step wizard using `tw.*` tokens:
+  - Step 1: Welcome screen
+  - Step 2: Family name input
+  - Step 3: Admin account (name, email, password, confirm) with validation
+  - Step 4: Language selection (EN/SV as clickable cards) + calls POST /api/v1/setup on finish
+  - Step 5 (success): Shows child screen + parent panel URLs for each LAN address with copy buttons; auto-login button calls POST /api/v1/auth/login and redirects to /parent
+- `README.md` — replaced old 6-step Quick Start (with manual curl setup call) with a 3-step wizard-based Quick Start
+
+Result: a fresh `docker compose up -d` → open `http://localhost` → follow wizard (60s) is all that's needed. No `.env` file, no curl commands, no token copying.
 
 ## Session 18 additions (2026-03-17)
 

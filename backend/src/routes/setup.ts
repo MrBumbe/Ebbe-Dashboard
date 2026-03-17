@@ -1,7 +1,11 @@
 /**
- * First-run setup endpoint.
- * Creates the initial family + admin account.
- * Returns 409 if any family already exists — safe to leave mounted in production.
+ * First-run setup endpoints.
+ *
+ * GET  /api/v1/setup/status  — returns { configured: boolean }
+ * POST /api/v1/setup          — creates the initial family + admin account
+ *
+ * The POST endpoint returns 409 if a family already exists — safe to leave
+ * mounted in production.
  */
 import { Router, Request, Response } from 'express';
 import { randomUUID } from 'crypto';
@@ -11,12 +15,21 @@ import { families, users, children, childLayouts, settings } from '../db/schema'
 
 const router = Router();
 
+// GET /api/v1/setup/status
+router.get('/status', (req: Request, res: Response) => {
+  const db = getDb();
+  const existing = db.select().from(families).get();
+  res.json({ data: { configured: !!existing } });
+});
+
 // POST /api/v1/setup
 router.post('/', (req: Request, res: Response) => {
-  const { familyName, adminEmail, adminPassword } = req.body as {
+  const { familyName, adminName, adminEmail, adminPassword, language } = req.body as {
     familyName?: string;
+    adminName?: string;
     adminEmail?: string;
     adminPassword?: string;
+    language?: string;
   };
 
   if (!familyName || !adminEmail || !adminPassword) {
@@ -58,7 +71,7 @@ router.post('/', (req: Request, res: Response) => {
   db.insert(users).values({
     id: randomUUID(),
     familyId,
-    name: 'Admin',
+    name: adminName?.trim() || 'Admin',
     email: adminEmail,
     passwordHash: hashPassword(adminPassword),
     role: 'admin',
@@ -90,8 +103,9 @@ router.post('/', (req: Request, res: Response) => {
     db.insert(childLayouts).values({ familyId, ...entry }).run();
   }
 
-  // Seed default settings
-  db.insert(settings).values({ familyId, key: 'family.language', value: '"en"' }).run();
+  // Seed default settings (language from wizard, defaults to 'en')
+  const lang = language === 'sv' ? 'sv' : 'en';
+  db.insert(settings).values({ familyId, key: 'family.language', value: JSON.stringify(lang) }).run();
 
   res.status(201).json({
     data: {

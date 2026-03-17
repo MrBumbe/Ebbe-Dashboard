@@ -25,138 +25,34 @@ Interested in contributing? See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
-## Quick Start
+## Quick start
 
-### Prerequisites
+1. Clone the repo and start Ebbe:
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
+   ```bash
+   git clone https://github.com/[user]/ebbe.git
+   cd ebbe
+   docker compose up -d
+   ```
 
-That's the only requirement. Everything else runs inside Docker.
+2. Open `http://localhost` in your browser (or the IP address of your server
+   if running on a Raspberry Pi or home server).
 
----
+3. Follow the setup wizard — takes about 60 seconds.
 
-### Step 1 — Download the project
+That's it. No configuration files needed for a basic home install.
 
-If you received the project as a ZIP file, unzip it somewhere on your computer (e.g. `C:\Ebbe`).
-
-If you're cloning from GitHub:
-```bash
-git clone https://github.com/[user]/ebbe.git
-cd ebbe
-```
-
----
-
-### Step 2 — Create your configuration file
-
-In the project folder, find the file called `.env.example`. Make a copy of it and name the copy `.env`.
-
-Open `.env` in any text editor (Notepad is fine) and fill in these values:
-
-```
-JWT_SECRET=          ← paste a long random string here (see below)
-JWT_REFRESH_SECRET=  ← paste a different long random string here
-CADDY_EMAIL=         ← your email address (used for HTTPS certificates)
-CADDY_HOST=          ← your domain, or "localhost" for home use
-CORS_ORIGIN=         ← same as CADDY_HOST (with https:// if using a domain)
-```
-
-**How to generate a random secret string:**
-
-Open PowerShell and run this command — it will print a random string you can paste in:
-```powershell
-[System.Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }))
-```
-
-Run it twice to get two different strings — one for `JWT_SECRET` and one for `JWT_REFRESH_SECRET`.
-
-**For home use only (no public domain):**
-```
-CADDY_HOST=localhost
-CORS_ORIGIN=http://localhost
-```
-
-**For a public domain (e.g. on a home server or VPS):**
-```
-CADDY_HOST=ebbe.yourdomain.com
-CORS_ORIGIN=https://ebbe.yourdomain.com
-CADDY_EMAIL=your@email.com
-```
+**Optional:** Copy `.env.example` to `.env` to configure a custom domain,
+HTTPS, backups or AI features. See the Configuration section below for details.
 
 ---
 
-### Step 3 — Start Ebbe
+### Setting up the child's screen
 
-Open PowerShell (or Terminal) in the project folder and run:
-
-```powershell
-docker compose up -d
+After the setup wizard, you'll see the child screen URL displayed — it looks like:
 ```
-
-Docker will download the required images and build the app. This takes a few minutes the first time. You'll see output while it works. When it finishes you'll get your prompt back.
-
-To check that everything is running:
-```powershell
-docker compose ps
+http://192.168.1.100/child?token=abc123...
 ```
-
-All three services (`ebbe-backend`, `ebbe-frontend`, `ebbe-caddy`) should show as `running`.
-
----
-
-### Step 4 — Create your account
-
-Ebbe doesn't have a sign-up page — you create the first account using a one-time setup call.
-
-Open PowerShell and run this (replace the values in `<angle brackets>`):
-
-```powershell
-Invoke-RestMethod -Method Post -Uri "http://localhost/api/v1/setup" `
-  -ContentType "application/json" `
-  -Body '{"familyName":"<Your Family Name>","adminEmail":"<your@email.com>","adminPassword":"<choose a password>"}'
-```
-
-**Example:**
-```powershell
-Invoke-RestMethod -Method Post -Uri "http://localhost/api/v1/setup" `
-  -ContentType "application/json" `
-  -Body '{"familyName":"The Svenssons","adminEmail":"parent@example.com","adminPassword":"mysecretpassword"}'
-```
-
-The response will look like this:
-```json
-{
-  "data": {
-    "message": "Ebbe is ready!",
-    "childToken": "a3f8b2c1...",
-    "loginUrl": "/parent"
-  }
-}
-```
-
-**Save the `childToken` value** — you'll need it in the next step. This is the secret key for the child's screen. If you lose it, you can find it later in the Parent panel under Settings.
-
-> The setup endpoint automatically disables itself after the first account is created. Calling it again returns an error.
-
----
-
-### Step 5 — Log in to the parent panel
-
-Open your browser and go to:
-- **Home use:** `http://localhost/parent`
-- **With a domain:** `https://ebbe.yourdomain.com/parent`
-
-Log in with the email and password you just created. From here you can add tasks, rewards, schedule items, and events.
-
----
-
-### Step 6 — Set up the child's screen
-
-The child's screen URL is:
-```
-http://localhost/child?token=<childToken>
-```
-Replace `<childToken>` with the token you received in Step 4.
 
 **Option A — Kiosk tablet (recommended)**
 
