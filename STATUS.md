@@ -197,6 +197,12 @@ Events design (intentional):
   - `routes/setup.ts`: also inserts a default child row at setup time for new installs.
 - The existing child now appears in the Children management page with name "Child" (editable) and the same kiosk URL as before.
 
+## Session 17 additions (2026-03-17)
+
+- `CONTRIBUTING.md` created — public-facing contributor guide (bug reports, feature suggestions, translations, code, roadmap, dev setup, code style)
+- `README.md` — added contributing link near the top
+- `.gitignore` — added `CLAUDE.md` and `STATUS.md` (internal AI context, not for public repo)
+
 ## Session 16 additions (2026-03-17)
 
 - Switched license to MIT; created `LICENSE` file with standard MIT text

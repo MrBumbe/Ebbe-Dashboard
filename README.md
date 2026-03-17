@@ -4,6 +4,8 @@ A self-hosted family dashboard that helps children build daily routines through 
 
 Built for families with children who thrive on structure and predictability — but general enough for any family.
 
+Interested in contributing? See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ---
 
 ## What it does

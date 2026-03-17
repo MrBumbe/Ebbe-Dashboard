@@ -35,3 +35,7 @@ Thumbs.db
 # Claude Code session data
 .claude/
 package-lock.json
+
+# Internal AI development context — not for public consumption
+CLAUDE.md
+STATUS.md
