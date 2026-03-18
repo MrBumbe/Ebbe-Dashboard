@@ -1,57 +1,45 @@
-/**
- * EbbeLogo — concept G (v2): large dominant star with white checkmark,
- * rising above a tall arc and horizon line, all in Ebbe amber (#F5A623).
- *
- * Works at any size from 16 px (favicon) to 512 px (splash screen).
- * No background — looks good on both light and dark surfaces.
- *
- * Geometry (viewBox 0 0 100 100):
- *   Star   — large 5-pointed path, centered at (50,47), dominant element
- *   Arc    — A32,32 semicircle; taller than wide, rises clearly above centre
- *   Line   — horizon at y=72
- *   Check  — white path inside the star
- */
-
 interface EbbeLogoProps {
-  size?: number;
-  className?: string;
+  size?: number
 }
 
-export default function EbbeLogo({ size = 32, className = '' }: EbbeLogoProps) {
+export default function EbbeLogo({ size = 32 }: EbbeLogoProps) {
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 100 100"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-label="Ebbe"
       fill="none"
-      className={className}
+      xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Horizon line */}
-      <line
-        x1="18" y1="72" x2="82" y2="72"
-        stroke="#F5A623" strokeWidth="6" strokeLinecap="round"
-      />
-
-      {/* Arc — taller than wide, rises clearly above centre */}
+      {/* Star */}
       <path
-        d="M22,72 A32,32 0 0,1 78,72"
-        stroke="#F5A623" strokeWidth="6" strokeLinecap="round"
-      />
-
-      {/* Star — large, centered, dominant */}
-      <path
-        d="M50,18 L57,40 L82,40 L62,54 L69,76 L50,62 L31,76 L38,54 L18,40 L43,40 Z"
+        d="M50,10 L57,32 L80,32 L62,46 L69,68 L50,54 L31,68 L38,46 L20,32 L43,32 Z"
         fill="#F5A623"
       />
-
       {/* Checkmark inside star */}
       <path
-        d="M38,54 L48,66 L65,42"
-        stroke="white" strokeWidth="6"
-        strokeLinecap="round" strokeLinejoin="round"
+        d="M37,46 L48,58 L64,36"
+        stroke="white"
+        strokeWidth="5.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* Horizon line */}
+      <line
+        x1="20" y1="80"
+        x2="80" y2="80"
+        stroke="#F5A623"
+        strokeWidth="5"
+        strokeLinecap="round"
+      />
+      {/* Arc — sits just below star, above horizon line */}
+      <path
+        d="M24,80 A28,22 0 0,1 76,80"
+        stroke="#F5A623"
+        strokeWidth="5"
+        strokeLinecap="round"
+        fill="none"
       />
     </svg>
-  );
+  )
 }

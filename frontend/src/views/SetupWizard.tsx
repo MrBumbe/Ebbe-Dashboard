@@ -310,7 +310,7 @@ export default function SetupWizard() {
     return (
       <WizardShell>
         <div className="text-center">
-          <EbbeLogo size={80} className="mx-auto mb-6" />
+          <div className="flex justify-center mb-6"><EbbeLogo size={80} /></div>
           <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-3">
             {t('setup.welcome.title')}
           </h1>
@@ -576,7 +576,7 @@ export default function SetupWizard() {
 
         {/* Heading */}
         <div className="text-center mb-8">
-          <EbbeLogo size={48} className="mx-auto mb-4" />
+          <div className="flex justify-center mb-4"><EbbeLogo size={48} /></div>
           <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
             {t('setup.done.title')}
           </h1>
