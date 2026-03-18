@@ -130,6 +130,10 @@ Everything through Fix 13 + session 6 fixes is shipped.
 - Bug 6: Layout manager now shows widgets (backend returns DEFAULT_LAYOUT when DB is empty; setup seeds it; header widgets filtered from LayoutManager UI).
 - New: Redesigned child screen header — always-visible 3-column header (weather, clock+analog, stars) with 3 levels based on widget count. `AnalogClock.tsx` extracted as reusable component. `ChildHeader.tsx` created.
 
+## Session 23b (2026-03-18) — EbbeLogo v4 exact half-circle geometry
+
+viewBox 110×90; horizon line + arc at y=55, endpoints x=11/x=99; semicircle radius 44 (exact half-circle); star top point at y=11 aligned to arc top; checkmark M44,53 L54,67 L70,44. TypeScript clean. Docker rebuilt.
+
 ## Session 23 (2026-03-18) — EbbeLogo v3 final geometry
 
 Replaced SVG with exact user-specified coordinates (100×100 viewBox): star path M50,10…Z dominant element; white checkmark M37,46 L48,58 L64,36; arc A28,22 between star and horizon line at y=80. Removed `className` prop from interface; SetupWizard callers wrapped in flex div for centering. TypeScript clean. Docker rebuilt.
