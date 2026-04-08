@@ -112,10 +112,10 @@ Automated screen time control via router APIs — dedicated modules for Circle, 
 
 ```bash
 # Clone the repository
-git clone https://github.com/[user]/ebbe.git
+git clone https://github.com/MrBumbe/Ebbe-Dashboard.git
 cd ebbe
 
-# Create your local configuration
+# Create your local configuration (may not be needed anymore. Setup wizard should generate these info)
 cp .env.example .env
 # Open .env and fill in JWT_SECRET, JWT_REFRESH_SECRET, and CORS_ORIGIN
 
