@@ -26,7 +26,7 @@ Use at your own risk.
 - Star‑based reward system  
 - Local SQLite database  
 - Docker setup for local development
-- and more...
+  and more...
 
 ---
 
@@ -34,7 +34,7 @@ Use at your own risk.
 
 ```bash
 docker compose up --build
-
+```
 ---
 
 ## 🧪 Running without Docker
